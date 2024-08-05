@@ -97,7 +97,7 @@ class _FieldReportedScreenState extends State<FieldReportedScreen> {
                 try {
                   final response = await http.put(
                     Uri.parse(
-                        'http://192.168.93.54:4000/api/ticket/ReportAssignedTicket/$ticketId'),
+                        '$address:$port/api/ticket/ReportAssignedTicket/$ticketId'),
                     headers: {'Content-Type': 'application/json'},
                     body: json.encode({
                       'status': 'REPORTED',

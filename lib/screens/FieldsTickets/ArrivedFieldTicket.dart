@@ -100,7 +100,7 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
 
         try {
           final response = await http.get(
-            Uri.parse('http://192.168.93.54:4000/api/ticket/$ticketId'),
+            Uri.parse('$address:$port:4000/api/ticket/$ticketId'),
             headers: {'Authorization': 'Bearer ${widget.token}'},
           );
 
@@ -115,7 +115,7 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
             if (codeqrequipement.isEmpty) {
               final updateResponse = await http.put(
                 Uri.parse(
-                    'http://192.168.93.54:4000/api/ticket/started/$ticketId'),
+                   '$address:$port/api/ticket/started/$ticketId'),
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': 'Bearer ${widget.token}'
@@ -153,7 +153,7 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
               if (codeqrequipement.isNotEmpty && codeqrequipement == qrResult) {
                 final updateResponse = await http.put(
                   Uri.parse(
-                      'http://192.168.93.54:4000/api/ticket/started/$ticketId'),
+                      '$address:$port/api/ticket/started/$ticketId'),
                   headers: {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ${widget.token}'
@@ -387,24 +387,36 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Status: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['status']),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Agence: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['service_station']),
-                              ],
-                            ),
+                               Row(
+                                children: [
+                                  Text(
+                                    "Status: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['status']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Client: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['client']['name']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Agence: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['agence']['agence']),
+                                ],
+                              ),
                           ],
                         ),
                         trailing: ElevatedButton(

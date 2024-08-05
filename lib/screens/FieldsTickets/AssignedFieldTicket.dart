@@ -44,7 +44,10 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
         if (responseData != null) {
           setState(() {
             tickets = responseData
-                .where((ticket) => ticket['status'] == 'ASSIGNED')
+                .where((ticket) =>
+                    ticket['status'] != null &&
+                    (ticket['status'] == 'ASSIGNED' ||
+                        ticket['status'] == 'TRANSFERED'))
                 .toList();
             isLoading = false;
           });
@@ -215,6 +218,26 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   Text(tickets[index]['status']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Client: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['client']['name']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Agence: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['agence']['agence']),
                                 ],
                               ),
                             ],

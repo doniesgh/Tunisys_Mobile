@@ -6,8 +6,6 @@ import 'package:todo/screens/FieldsTickets/ReportedFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/solvingTicketModalField.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
 import 'package:todo/screens/config/config_service.dart';
-// import 'simple_hello_dialog_field.dart'; // Assurez-vous d'importer le bon fichier
-
 class FieldLoadingScreen extends StatefulWidget {
   final String token;
   final String? email;
@@ -125,10 +123,19 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
                             Row(
                               children: [
                                 Text(
+                                  "Client: ",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(tickets[index]['client']['name']),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text(
                                   "Agence: ",
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                                Text(tickets[index]['service_station']),
+                                Text(tickets[index]['agence']['agence']),
                               ],
                             ),
                           ],
@@ -175,6 +182,7 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
                 ),
     );
   }
+
   var address = ConfigService().adresse;
   var port = ConfigService().port;
   Future<void> handleReportTicket(String ticketId) async {

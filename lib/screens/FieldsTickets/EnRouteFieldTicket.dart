@@ -89,7 +89,7 @@ class _FieldEnRouteScreenState extends State<FieldEnRouteScreen> {
     if (result == true) {
       try {
         final response = await http.put(
-          Uri.parse('http://192.168.93.54:4000/api/ticket/arrived/$ticketId'),
+          Uri.parse('$address:$port/api/ticket/arrived/$ticketId'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'status': 'ARRIVED',
@@ -208,24 +208,36 @@ class _FieldEnRouteScreenState extends State<FieldEnRouteScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Status: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['status']),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Agence: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['service_station']),
-                              ],
-                            ),
+                               Row(
+                                children: [
+                                  Text(
+                                    "Status: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['status']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Client: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['client']['name']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Agence: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['agence']['agence']),
+                                ],
+                              ),
                           ],
                         ),
                         trailing: ElevatedButton(

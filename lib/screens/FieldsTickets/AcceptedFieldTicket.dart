@@ -327,15 +327,36 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Status: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['status']),
-                              ],
-                            ),
+                               Row(
+                                children: [
+                                  Text(
+                                    "Status: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['status']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Client: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['client']['name']),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Agence: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(tickets[index]['agence']['agence']),
+                                ],
+                              ),
 
                             SizedBox(
                                 height:

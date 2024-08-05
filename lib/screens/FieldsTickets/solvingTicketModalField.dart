@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:todo/screens/FieldsTickets/qrCodeScreenFin.dart';
 import 'package:todo/screens/FieldsTickets/SolvedFieldTicket.dart';
+import 'package:todo/screens/config/config_service.dart';
 
 class SimpleHelloDialogField extends StatefulWidget {
   final String ticketId;
@@ -60,13 +61,14 @@ class _SimpleHelloDialogFieldState extends State<SimpleHelloDialogField> {
       errorMessage = '';
     });
   }
-
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   Future<void> handleSolved(BuildContext context) async {
     // Effectuer la mise à jour du ticket
     try {
       // Obtenir les détails du ticket
       final ticketResponse = await http.get(
-        Uri.parse('http://192.168.93.54:4000/api/ticket/${widget.ticketId}'),
+        Uri.parse('$address:$port/api/ticket/${widget.ticketId}'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
@@ -87,7 +89,7 @@ class _SimpleHelloDialogFieldState extends State<SimpleHelloDialogField> {
       // Mettre à jour le ticket si les codes QR correspondent
       final updateResponse = await http.put(
         Uri.parse(
-            'http://192.168.93.54:4000/api/ticket/updateTicketSolve/${widget.ticketId}'), // Inclure le ticketId dans l'URL
+            '$address:$port/api/ticket/updateTicketSolve/${widget.ticketId}'), // Inclure le ticketId dans l'URL
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.token}'

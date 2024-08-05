@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => FieldTicket(),
+            builder: (context) => FieldTicketScreen(token: widget.token),
           ),
         );
         break;
@@ -88,8 +88,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home',
-            style:
-                TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontSize: 24)),
+            style: TextStyle(
+                color: Color.fromARGB(255, 255, 255, 255), fontSize: 24)),
         backgroundColor: Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
       ),
@@ -101,7 +101,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => FieldTicket()),
+                MaterialPageRoute(
+                  builder: (context) => PTicketScreen(
+                    token: widget.token,
+                  ),
+                ),
               );
             },
           ),
@@ -110,7 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => FieldTicket()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          FieldTicketScreen(token: widget.token)),
                 );
               }),
           ListTile(
