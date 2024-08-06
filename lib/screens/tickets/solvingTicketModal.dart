@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
-import 'package:todo/screens/FieldsTickets/qrCodeScreenFin.dart';
 
 class SimpleHelloDialog extends StatelessWidget {
   final String ticketId;
   final String token;
 
   final TextEditingController solutionController = TextEditingController();
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
 
   SimpleHelloDialog({Key? key, required this.ticketId, required this.token})
       : super(key: key) {
@@ -103,15 +102,6 @@ class SimpleHelloDialog extends StatelessWidget {
 
     if (confirmationResult == true) {
       await handleSolved(context);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => QrScannerScreenFin(
-        //    ticketId: ticketId,
-        //    token: token,
-          ),
-        ),
-      );
     }
   }
 

@@ -66,7 +66,7 @@ class _PhoneLoadingScreenState extends State<PhoneLoadingScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Text("hello");
+        return SimpleHelloDialog(ticketId: ticketId, token: widget.token);
       },
     );
   }

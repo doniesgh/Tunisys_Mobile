@@ -14,9 +14,14 @@ import 'package:todo/screens/tickets/phonearrived.dart';
 import 'package:todo/screens/tickets/phonedeparture.dart';
 import 'package:todo/screens/tickets/phoneloading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+);
   SharedPreferences prefs = await SharedPreferences.getInstance();  String? token = prefs.getString('token');
   String? email = prefs.getString('email');
   String? userRole = prefs.getString('role');

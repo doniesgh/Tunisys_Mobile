@@ -105,8 +105,7 @@ class _PhoneSolvedScreenState extends State<PhoneSolvedScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(tickets[index]['status']),
-                            Text(tickets[index]['service_station']),
-                          ],
+                                                      ],
                         ),
                         trailing: ElevatedButton(
                           onPressed: () {
