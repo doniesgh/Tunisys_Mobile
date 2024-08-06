@@ -293,7 +293,9 @@ class TicketDetailScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text('Client: ${ticket['client']?['name'] ?? 'N/A'}'),
-            Text('Status: ${isApproved ? 'Approved' : 'Not Approved'}'),
+            Text('Agence: ${ticket['agence']?['agence'] ?? 'N/A'}'),
+            Text('Agence: ${ticket['agence']?['agence'] ?? 'N/A'}'),
+/*
             SizedBox(height: 20),
             Text(
               'Photo Fiche Intervention',
@@ -330,7 +332,7 @@ class TicketDetailScreen extends StatelessWidget {
                   // Code pour télécharger le PDF ou autre action
                 },
                 child: Text('Download PDF'),
-              ),
+              ),*/
           ],
         ),
       ),
