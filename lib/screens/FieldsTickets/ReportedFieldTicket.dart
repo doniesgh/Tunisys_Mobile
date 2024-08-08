@@ -284,9 +284,10 @@ class _FieldReportedScreenState extends State<FieldReportedScreen> {
                           children: [
                             Text("Ticket ID: ${tickets[index]['reference']}"),
                             Text("Status: ${tickets[index]['status']}"),
-
                             Text(
-                                "Agence: ${tickets[index]['service_station']}"),
+                                "Client: ${tickets[index]['client']['name']}"),
+                            Text(
+                                "Agence: ${tickets[index]['agence']['agence']}"),
                             Text(
                                 "Reported Assigned Ticket Note: ${tickets[index]['reporting_note_assigned']}"),
                             Text(

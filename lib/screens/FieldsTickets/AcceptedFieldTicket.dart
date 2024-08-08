@@ -118,7 +118,6 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                   );
                   return; // Arrête l'exécution si le champ est vide
                 }
-
                 Navigator.of(context).pop(true); // Confirme l'action de report
                 try {
                   final response = await http.put(
@@ -142,15 +141,14 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                           actions: [
                             TextButton(
                               onPressed: () {
-                                Navigator.of(context)
-                                    .pop(); // Fermer le dialogue
-                                Navigator.push(
+                                Navigator.of(context).pop();
+                                Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => FieldReportedScreen(
-                                      token: '',
+                                    builder: (context) => FieldEnRouteScreen(
+                                      token: widget.token,
                                     ),
-                                  ), // Naviguer vers FieldReportedScreen
+                                  ),
                                 );
                               },
                               child: Text('OK'),
@@ -327,36 +325,15 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                               Row(
-                                children: [
-                                  Text(
-                                    "Status: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(tickets[index]['status']),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Client: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(tickets[index]['client']['name']),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Agence: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(tickets[index]['agence']['agence']),
-                                ],
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Status: ",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(tickets[index]['status']),
+                              ],
+                            ),
 
                             SizedBox(
                                 height:
