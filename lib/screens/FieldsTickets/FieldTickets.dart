@@ -30,7 +30,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
   int arrivedCount = 0;
   int loadingCount = 0;
   int solvedCount = 0;
-  int reportedCount = 0;
+  int reportedCount = 2;
 
   @override
   void initState() {
@@ -56,15 +56,16 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData != null) {
+          print(responseData); 
           setState(() {
-            assignedCount = responseData['assigned'];
-            approuvedCount = responseData['approuved'];
-            acceptedCount = responseData['accepted'];
-            enRouteCount = responseData['enRoute'];
-            arrivedCount = responseData['arrived'];
-            loadingCount = responseData['loading'];
-            solvedCount = responseData['solved'];
-            reportedCount = responseData['reported'];
+            assignedCount = responseData['assigned'] ?? 0;
+            approuvedCount = responseData['approuved'] ?? 0;
+            acceptedCount = responseData['accepted'] ?? 0;
+            enRouteCount = responseData['enRoute'] ?? 0;
+            arrivedCount = responseData['arrived'] ?? 0;
+            loadingCount = responseData['loading'] ?? 0;
+            solvedCount = responseData['solved'] ?? 0;
+            reportedCount = responseData['reported'] ?? 0;
             isLoading = false;
           });
         } else {
@@ -285,7 +286,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
   Widget buildTicketCard(String title, int count, Color color, IconData icon,
       VoidCallback onPressed) {
     return Container(
-      height: 120, // Adjust the height of the cards
+      height: 120,
       margin: EdgeInsets.symmetric(horizontal: 8),
       child: Stack(
         clipBehavior: Clip.none,
