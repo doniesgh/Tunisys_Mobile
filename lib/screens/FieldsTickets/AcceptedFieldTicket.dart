@@ -328,10 +328,35 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                             Row(
                               children: [
                                 Text(
-                                  "Status: ",
+                                  "Reference: ",
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
+                                Text(tickets[index]['reference']),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Status: ",
+                                ),
                                 Text(tickets[index]['status']),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Client: ",
+                                ),
+                                Text(tickets[index]['client']['name']),
+                              ],
+                            ),
+
+                            Row(
+                              children: [
+                                Text(
+                                  "Agence: ",
+                                ),
+                                Text(tickets[index]['agence']['agence']),
                               ],
                             ),
 

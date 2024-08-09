@@ -100,7 +100,7 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
 
         try {
           final response = await http.get(
-            Uri.parse('$address:$port:4000/api/ticket/$ticketId'),
+            Uri.parse('$address:$port/api/ticket/$ticketId'),
             headers: {'Authorization': 'Bearer ${widget.token}'},
           );
 
@@ -419,6 +419,7 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
                               ),
                           ],
                         ),
+                        
                         trailing: ElevatedButton(
                           onPressed: () {
                             //handleStartTicket(tickets[index]['_id']);

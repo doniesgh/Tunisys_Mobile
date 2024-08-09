@@ -46,6 +46,7 @@ class _PhoneAssignedScreenState extends State<PhoneAssignedScreen> {
                 .toList();
             isLoading = false;
           });
+          print(responseData);
         } else {
           throw Exception('Response data is null');
         }

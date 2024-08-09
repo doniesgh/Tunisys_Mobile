@@ -21,22 +21,27 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-);
-  SharedPreferences prefs = await SharedPreferences.getInstance();  String? token = prefs.getString('token');
+  );
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('token');
   String? email = prefs.getString('email');
+  String? id = prefs.getString('id');
+
   String? userRole = prefs.getString('role');
-  runApp(MyApp(token: token, email: email, userRole: userRole));
+  runApp(MyApp(token: token, email: email, userRole: userRole, id: id));
 }
 
 class MyApp extends StatelessWidget {
   final String? token;
   final String? email;
   final String? userRole;
+  final String? id;
 
   const MyApp(
       {Key? key,
       required this.token,
       required this.email,
+      required this.id,
       required this.userRole})
       : super(key: key);
 
@@ -44,7 +49,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isTokenExpired = token == null || JwtDecoder.isExpired(token!);
     bool isCoordinatrice = userRole == "COORDINATRICE";
-    bool isManager =userRole == "MANAGER";
+    bool isManager = userRole == "MANAGER";
     final Map<String, WidgetBuilder> coordinatorRoutes = {
       '/assignedphone': (context) => PhoneAssignedScreen(token: token!),
       '/acceptedphone': (context) => PhoneAcceptedScreen(token: token!),
@@ -90,6 +95,7 @@ class MyApp extends StatelessWidget {
                   : HomeScreen(
                       token: token!,
                       email: email!,
+                      id: id!,
                     ),
     );
   }

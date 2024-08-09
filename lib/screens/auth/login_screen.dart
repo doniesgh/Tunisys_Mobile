@@ -64,17 +64,21 @@ class _LoginScreenState extends State<LoginScreen> {
           var myToken = responseData["token"];
           var email = responseData["email"];
           var role = responseData["role"];
+          var id = responseData["id"];
 
           Utils.showToast("Logged in successfully");
           Utils.showToast(email);
+                    Utils.showToast(id);
+
           Utils.showToast(role);
 
           // Logging the token, email, and role
-          print("Token: $myToken, Email: $email, Role: $role");
+          print("Token: $myToken, Email: $email, Role: $role, Id: $id");
 
           prefs.setString("token", myToken);
           prefs.setString("email", email);
           prefs.setString("role", role);
+          prefs.setString("id", id);
 
           // Redirect based on role
           if (role == "COORDINATRICE") {
@@ -99,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => HomeScreen(token: myToken, email: email),
+                builder: (context) => HomeScreen(token: myToken, email: email, id : id),
               ),
             );
           }

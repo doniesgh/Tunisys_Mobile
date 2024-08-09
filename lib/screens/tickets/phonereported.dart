@@ -4,18 +4,18 @@ import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
 
-class FieldReportedScreen extends StatefulWidget {
+class PhoneReportedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const FieldReportedScreen({Key? key, required this.token, this.email})
+  const PhoneReportedScreen({Key? key, required this.token, this.email})
       : super(key: key);
 
   @override
-  _FieldReportedScreenState createState() => _FieldReportedScreenState();
+  _PhoneReportedScreenState createState() => _PhoneReportedScreenState();
 }
 
-class _FieldReportedScreenState extends State<FieldReportedScreen> {
+class _PhoneReportedScreenState extends State<PhoneReportedScreen> {
   bool isLoading = false;
   List<dynamic> tickets = [];
 
@@ -33,7 +33,7 @@ class _FieldReportedScreenState extends State<FieldReportedScreen> {
     });
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/ticketht/assigned/field'),
+        Uri.parse('$address:$port/api/ticketht/assigned/phone'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },

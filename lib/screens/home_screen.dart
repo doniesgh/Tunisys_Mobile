@@ -12,8 +12,10 @@ import 'package:todo/screens/tickets/phoneTicket.dart';
 
 class HomeScreen extends StatefulWidget {
   final String token;
+  final String id;
   final String email;
-  const HomeScreen({super.key, required this.token, required this.email});
+  const HomeScreen(
+      {super.key, required this.token, required this.email, required this.id});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -35,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     print(widget.token);
     print(widget.email);
+    print(widget.id);
   }
 
   int _selectedIndex = 0;
@@ -56,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => FieldTicketScreen(token: widget.token),
+            builder: (context) =>
+                FieldTicketScreen(token: widget.token, id: widget.id),
           ),
         );
         break;
@@ -115,8 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          FieldTicketScreen(token: widget.token)),
+                      builder: (context) => FieldTicketScreen(
+                          token: widget.token, id: widget.id)),
                 );
               }),
           ListTile(
@@ -143,10 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PTicketScreen(
-                          token: widget.token,
-                          //email: email,
-                        ),
+                        builder: (context) =>
+                            PTicketScreen(token: widget.token, id: widget.id),
                       ));
                 },
                 style: ElevatedButton.styleFrom(
@@ -175,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          FieldTicketScreen(token: widget.token),
+                          FieldTicketScreen(token: widget.token, id: widget.id),
                     ),
                   );
                 },

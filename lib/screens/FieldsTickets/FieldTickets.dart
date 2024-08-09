@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:todo/screens/FieldsTickets/ApprouvedFieldTicket.dart';
 import 'dart:convert';
-
 import 'package:todo/screens/FieldsTickets/AssignedFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/AcceptedFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/EnRouteFieldTicket.dart';
@@ -14,8 +13,9 @@ import 'package:todo/screens/config/config_service.dart';
 
 class FieldTicketScreen extends StatefulWidget {
   final String token;
-
-  const FieldTicketScreen({Key? key, required this.token}) : super(key: key);
+  final String? id;
+  const FieldTicketScreen({Key? key, required this.token, required this.id})
+      : super(key: key);
 
   @override
   _FieldTicketScreenState createState() => _FieldTicketScreenState();
@@ -30,7 +30,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
   int arrivedCount = 0;
   int loadingCount = 0;
   int solvedCount = 0;
-  int reportedCount = 2;
+  int reportedCount = 0;
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/ticket/count/${widget.token}'),
+        Uri.parse('$address:$port/api/ticket/count/${widget.id}'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
@@ -56,7 +56,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData != null) {
-          print(responseData); 
+          print(responseData);
           setState(() {
             assignedCount = responseData['assigned'] ?? 0;
             approuvedCount = responseData['approuved'] ?? 0;

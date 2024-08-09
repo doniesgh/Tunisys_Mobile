@@ -6,6 +6,7 @@ import 'package:todo/screens/FieldsTickets/ReportedFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/solvingTicketModalField.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
 import 'package:todo/screens/config/config_service.dart';
+
 class FieldLoadingScreen extends StatefulWidget {
   final String token;
   final String? email;
@@ -97,82 +98,108 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
                   itemBuilder: (context, index) {
                     return Card(
                       margin: EdgeInsets.all(10),
-                      child: ListTile(
-                        title: Text(tickets[index]['reference']),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
-                            ),
-                          );
-                        },
-                        subtitle: Column(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Status: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['status']),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Client: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['client']['name']),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Agence: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['agence']['agence']),
-                              ],
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                String ticketId = tickets[index]['_id'];
-                                String token = widget.token;
-                                showSimpleHelloDialog(context, ticketId, token);
+                            ListTile(
+                              title: Text(tickets[index]['reference']),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TicketDetailScreen(
+                                        ticket: tickets[index]),
+                                  ),
+                                );
                               },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Color.fromARGB(255, 35, 171, 4),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "Status: ",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(tickets[index]['status']),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "Client: ",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(tickets[index]['client']['name']),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "Agence: ",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(tickets[index]['agence']['agence']),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              child: Text('Solved',
-                                  style: TextStyle(color: Colors.white)),
                             ),
-                            SizedBox(width: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                handleReportTicket(tickets[index]['_id']);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Color.fromARGB(255, 81, 81, 81),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                            SizedBox(
+                                height:
+                                    10), // Add spacing between text and buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      String ticketId = tickets[index]['_id'];
+                                      String token = widget.token;
+                                      showSimpleHelloDialog(
+                                          context, ticketId, token);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Color.fromARGB(255, 35, 171, 4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Solved',
+                                      style: TextStyle(
+                                          color: const Color.fromARGB(
+                                              255, 42, 42, 42)),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              child: Text('Reported',
-                                  style: TextStyle(color: Colors.white)),
+                                SizedBox(
+                                    width: 10), // Add spacing between buttons
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      handleReportTicket(tickets[index]['_id']);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Color.fromARGB(255, 97, 5, 184),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Report',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
