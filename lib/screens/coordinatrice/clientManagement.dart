@@ -47,7 +47,7 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => NotificationScreen(token: widget.token),
+            builder: (context) => NotificationScreen(),
           ),
         );
         break;

@@ -48,7 +48,7 @@ class _HomeCordinatriceScreenState extends State<HomeCordinatrice> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => NotificationScreen(token: widget.token),
+            builder: (context) => NotificationScreen(),
           ),
         );
         break;

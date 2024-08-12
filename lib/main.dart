@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
     bool isManager = userRole == "MANAGER";
     final Map<String, WidgetBuilder> coordinatorRoutes = {
       '/assignedphone': (context) => PhoneAssignedScreen(token: token!),
-      '/notification': (context) => NotificationScreen(token: token!),
+      '/notification': (context) => NotificationScreen(),
       '/acceptedphone': (context) => PhoneAcceptedScreen(token: token!),
       '/departurephone': (context) => PhoneDepartureScreen(token: token!),
       '/arrivedphone': (context) => PhoneArrivedScreen(token: token!),
@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
     final Map<String, WidgetBuilder> managerRoutes = {
       '/alertemanager': (context) => AlerteManagerScreen(token: token!),
       '/historique': (context) => HistoriqueManagerScreen(token: token!),
-       '/notification': (context) => NotificationScreen(token: token!),
+      '/notification': (context) => NotificationScreen(),
     };
 
     final Map<String, WidgetBuilder> appRoutes = {};
