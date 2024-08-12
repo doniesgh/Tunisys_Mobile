@@ -71,7 +71,7 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
       },
     );
   }
-
+//print(result!.code)
   @override
   Widget build(BuildContext context) {
     return Scaffold(

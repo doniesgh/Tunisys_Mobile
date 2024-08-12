@@ -12,25 +12,35 @@ class HistoriqueScreen extends StatefulWidget {
   _HistoriqueScreenState createState() => _HistoriqueScreenState();
 }
 
-class _HistoriqueScreenState extends State<HistoriqueScreen> {
-  List<dynamic> historique = [];
-  bool isLoading = true;
+class _HistoriqueScreenState extends State<HistoriqueScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  List<dynamic> phoneApprovedHistorique = [];
+  List<dynamic> fieldApprovedHistorique = [];
+  bool isPhoneApprovedLoading = true;
+  bool isFieldApprovedLoading = true;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    fetchHistorique();
+    _tabController = TabController(length: 2, vsync: this);
+    //fetchHistorique('phone');
+    //fetchHistorique('field');
+    fetchAssignedTickets();
+    fetchAssignedFieldTickets();
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
-  Future<void> fetchHistorique() async {
+
+  Future<void> fetchAssignedFieldTickets() async {
     setState(() {
-      isLoading = true;
+      isFieldApprovedLoading = true;
     });
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/ticketht/approved/all'),
+        Uri.parse('$address:$port/api/ticketht/assigned/field'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
@@ -39,20 +49,55 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
         final responseData = json.decode(response.body);
         if (responseData != null) {
           setState(() {
-            historique = responseData;
-            isLoading = false;
+            fieldApprovedHistorique = responseData
+                .where((ticket) => ticket['status'] == 'APPROVED')
+                .toList();
+            isFieldApprovedLoading = false;
           });
-          print(responseData);
         } else {
           throw Exception('Response data is null');
         }
       } else {
-        throw Exception('Failed to load alertes: ${response.statusCode}');
+        throw Exception('Failed to load tickets: ${response.statusCode}');
       }
     } catch (error) {
       print('Error fetching alerts: $error');
       setState(() {
-        isLoading = false;
+        isFieldApprovedLoading = false;
+      });
+    }
+  }
+
+  Future<void> fetchAssignedTickets() async {
+    setState(() {
+      isPhoneApprovedLoading = true;
+    });
+    try {
+      final response = await http.get(
+        Uri.parse('$address:$port/api/ticketht/assigned/phone'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData != null) {
+          setState(() {
+            phoneApprovedHistorique = responseData
+                .where((ticket) => ticket['status'] == 'APPROVED')
+                .toList();
+            isPhoneApprovedLoading = false;
+          });
+        } else {
+          throw Exception('Response data is null');
+        }
+      } else {
+        throw Exception('Failed to load tickets: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching alerts: $error');
+      setState(() {
+        isPhoneApprovedLoading = false;
       });
     }
   }
@@ -67,42 +112,61 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
         ),
         backgroundColor: Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'Phone Approved'),
+            Tab(text: 'Field Approved'),
+          ],
+          labelColor: Colors.white, // Color for selected tab text
+          unselectedLabelColor: Colors.white54, // Color for unselected tab text
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 5.0),
-        child: isLoading
-            ? Center(child: CircularProgressIndicator())
-            : historique.isEmpty
-                ? Center(child: Text('No historique found'))
-                : ListView.builder(
-                    itemCount: historique.length,
-                    itemBuilder: (context, index) {
-                      final historiques = historique[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text(
-                              'Numéro Ticket: ${historiques['reference']}'),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    TicketDetailScreen(ticket: historiques),
-                              ),
-                            );
-                          },
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('TClient: ${historiques['client']['name']}'),
-                              Text('Type Ticket: ${historiques['type']}'),
-                            ],
-                          ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildHistoriqueList(phoneApprovedHistorique, isPhoneApprovedLoading),
+          _buildHistoriqueList(fieldApprovedHistorique, isFieldApprovedLoading),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoriqueList(List<dynamic> historique, bool isLoading) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 5.0),
+      child: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : historique.isEmpty
+              ? Center(child: Text('No historique found'))
+              : ListView.builder(
+                  itemCount: historique.length,
+                  itemBuilder: (context, index) {
+                    final historiques = historique[index];
+                    return Card(
+                      child: ListTile(
+                        title:
+                            Text('Numéro Ticket: ${historiques['reference']}'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TicketDetailScreen(ticket: historiques),
+                            ),
+                          );
+                        },
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Client: ${historiques['client']['name']}'),
+                            Text('Type Ticket: ${historiques['type']}'),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-      ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

@@ -42,7 +42,7 @@ class _FieldApprouvedScreenState extends State<FieldApprouvedScreen> {
         if (responseData != null) {
           setState(() {
             tickets = responseData
-                .where((ticket) => ticket['status'] == 'APPROUVED')
+                .where((ticket) => ticket['status'] == 'APPROVED')
                 .toList();
             isLoading = false;
           });

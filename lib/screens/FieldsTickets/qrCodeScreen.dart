@@ -47,7 +47,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   void _onQRViewCreated(QRViewController controller) {
     if (_isCameraInitialized) {
-      // Ne réinitialisez pas la caméra si elle est déjà initialisée
       return;
     }
 
@@ -60,7 +59,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       });
 
       print('Scanned QR Code: ${result!.code}'); // Impression de débogage
-
       _timer?.cancel(); // Annuler tout timer existant
       _timer = Timer(Duration(seconds: 1), () {
         controller.dispose(); // Dispose de la caméra

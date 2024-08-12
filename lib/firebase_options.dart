@@ -71,4 +71,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'netflix-react-12542.appspot.com',
     iosBundleId: 'com.example.todo',
   );
+
 }

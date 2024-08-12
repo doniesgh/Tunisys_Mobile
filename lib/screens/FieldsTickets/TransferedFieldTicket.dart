@@ -5,30 +5,30 @@ import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
 
-class FieldAssignedScreen extends StatefulWidget {
+class FieldTransferedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const FieldAssignedScreen({Key? key, required this.token, this.email})
+  const FieldTransferedScreen({Key? key, required this.token, this.email})
       : super(key: key);
 
   @override
-  _FieldAssignedScreenState createState() => _FieldAssignedScreenState();
+  _FieldTransferedScreenState createState() => _FieldTransferedScreenState();
 }
 
-class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
+class _FieldTransferedScreenState extends State<FieldTransferedScreen> {
   bool isLoading = false;
   List<dynamic> tickets = [];
 
   @override
   void initState() {
     super.initState();
-    fetchAssignedTickets();
+    fetchTransferedTickets();
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
-  Future<void> fetchAssignedTickets() async {
+  Future<void> fetchTransferedTickets() async {
     setState(() {
       isLoading = true;
     });
@@ -45,8 +45,7 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
           setState(() {
             tickets = responseData
                 .where((ticket) =>
-                    ticket['status'] != null &&
-                    (ticket['status'] == 'ASSIGNED'))
+                    ticket['status'] != null &&  ticket['status'] == 'TRANSFERED')
                 .toList();
             isLoading = false;
           });
@@ -167,7 +166,7 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Assigned',
+          'Transfered',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
         backgroundColor: Color.fromRGBO(209, 77, 90, 1),
@@ -175,7 +174,7 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
-            onPressed: fetchAssignedTickets,
+            onPressed: fetchTransferedTickets,
           ),
         ],
       ),
@@ -184,7 +183,7 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
           : tickets.isEmpty
               ? Center(
                   child: Text(
-                    'No assigned tickets found.',
+                    'No Transfered tickets found.',
                     style: TextStyle(fontSize: 20),
                   ),
                 )

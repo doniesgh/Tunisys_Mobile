@@ -122,7 +122,7 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
                                   "Agence: ",
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                                Text(tickets[index]['service_station']),
+                                Text(tickets[index]['agence']['agence']),
                               ],
                             ),
                           ],

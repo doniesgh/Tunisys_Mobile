@@ -61,6 +61,7 @@ class _SimpleHelloDialogFieldState extends State<SimpleHelloDialogField> {
       errorMessage = '';
     });
   }
+
   var address = ConfigService().adresse;
   var port = ConfigService().port;
   Future<void> handleSolved(BuildContext context) async {

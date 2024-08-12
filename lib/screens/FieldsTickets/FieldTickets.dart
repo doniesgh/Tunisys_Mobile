@@ -9,6 +9,7 @@ import 'package:todo/screens/FieldsTickets/ArrivedFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/LoadingFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/SolvedFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/ReportedFieldTicket.dart';
+import 'package:todo/screens/FieldsTickets/TransferedFieldTicket.dart';
 import 'package:todo/screens/config/config_service.dart';
 
 class FieldTicketScreen extends StatefulWidget {
@@ -24,6 +25,7 @@ class FieldTicketScreen extends StatefulWidget {
 class _FieldTicketScreenState extends State<FieldTicketScreen> {
   bool isLoading = false;
   int assignedCount = 0;
+  int transferedCount = 0;
   int approuvedCount = 0;
   int acceptedCount = 0;
   int enRouteCount = 0;
@@ -59,6 +61,8 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
           print(responseData);
           setState(() {
             assignedCount = responseData['assigned'] ?? 0;
+            transferedCount = responseData['transfered'] ?? 0;
+
             approuvedCount = responseData['approuved'] ?? 0;
             acceptedCount = responseData['accepted'] ?? 0;
             enRouteCount = responseData['enRoute'] ?? 0;
@@ -129,15 +133,15 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildTicketCard(
-                          'Accepted Tickets',
-                          acceptedCount,
-                          const Color(0xFFE59BE9),
-                          Icons.done,
+                          'Transfered Tickets',
+                          transferedCount,
+                          const Color(0xFF80C4E9),
+                          Icons.check_circle,
                           () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => FieldAcceptedScreen(
+                                builder: (context) => FieldTransferedScreen(
                                   token: widget.token,
                                 ),
                               ),
@@ -154,10 +158,29 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                     children: [
                       Expanded(
                         child: buildTicketCard(
-                          'En Route Tickets',
-                          enRouteCount,
+                          'Accepted Tickets',
+                          acceptedCount,
                           const Color(0xFFFFB6B9),
                           Icons.directions,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FieldAcceptedScreen(
+                                  token: widget.token,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: buildTicketCard(
+                          'En Route Tickets',
+                          enRouteCount,
+                          const Color(0xFF61C0BF),
+                          Icons.location_on,
                           () {
                             Navigator.push(
                               context,
@@ -170,13 +193,18 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       Expanded(
                         child: buildTicketCard(
                           'Arrived Tickets',
                           arrivedCount,
-                          const Color(0xFF61C0BF),
-                          Icons.location_on,
+                          const Color.fromARGB(255, 204, 255, 0),
+                          Icons.hourglass_empty,
                           () {
                             Navigator.push(
                               context,
@@ -189,18 +217,13 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                           },
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                      const SizedBox(width: 10),
                       Expanded(
                         child: buildTicketCard(
                           'Loading Tickets',
                           loadingCount,
                           Colors.orange,
-                          Icons.hourglass_empty,
+                          Icons.check_circle_outline,
                           () {
                             Navigator.push(
                               context,
@@ -213,13 +236,18 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       Expanded(
                         child: buildTicketCard(
                           'Solved Tickets',
                           solvedCount,
                           Colors.green,
-                          Icons.check_circle_outline,
+                          Icons.report_problem,
                           () {
                             Navigator.push(
                               context,
@@ -232,42 +260,18 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                           },
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                      const SizedBox(width: 10),
                       Expanded(
                         child: buildTicketCard(
                           'Reported Tickets',
                           reportedCount,
                           Colors.grey,
-                          Icons.report_problem,
+                          Icons.check_circle_outline,
                           () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => FieldReportedScreen(
-                                  token: widget.token,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: buildTicketCard(
-                          'Approuved Tickets',
-                          approuvedCount,
-                          const Color(0xFF80C4E9),
-                          Icons.check_circle,
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FieldApprouvedScreen(
                                   token: widget.token,
                                 ),
                               ),
