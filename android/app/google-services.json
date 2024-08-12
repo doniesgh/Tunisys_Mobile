@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:331048149798:android:f4f8ed7589fb82b2ac17e7",
         "android_client_info": {
-          "package_name": "com.tunisys.service"
+          "package_name": "com.example.todo"
         }
       },
       "oauth_client": [
