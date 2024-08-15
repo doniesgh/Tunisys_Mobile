@@ -68,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PTicketScreen(token: widget.token),
+            builder: (context) =>
+                PTicketScreen(token: widget.token, id: widget.id),
           ),
         );
         break;

@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,12 +27,16 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await FirebaseApi().initNotification();
+  await FirebaseApi().initPushNotification();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('token');
   String? email = prefs.getString('email');
   String? id = prefs.getString('id');
-
   String? userRole = prefs.getString('role');
+  // Debugging output
+  print(
+      "Retrieved from SharedPreferences - Token: $token, Email: $email, Role: $userRole, Id: $id");
+
   runApp(MyApp(token: token, email: email, userRole: userRole, id: id));
 }
 
@@ -50,7 +56,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isTokenExpired = token == null || JwtDecoder.isExpired(token!);
+    //bool isTokenExpired = token == null || JwtDecoder.isExpired(token!);
     bool isCoordinatrice = userRole == "COORDINATRICE";
     bool isManager = userRole == "MANAGER";
     final Map<String, WidgetBuilder> coordinatorRoutes = {
@@ -86,7 +92,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       routes: appRoutes,
-      home: isTokenExpired
+      home: token == null
           ? const LoginScreen()
           : isCoordinatrice
               ? HomeCordinatrice(
