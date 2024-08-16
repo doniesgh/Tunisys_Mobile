@@ -1,7 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:jiffy/jiffy.dart';
 import 'package:todo/screens/config/config_service.dart';
 
 class AlerteScreen extends StatefulWidget {
@@ -13,17 +12,27 @@ class AlerteScreen extends StatefulWidget {
   _AlerteScreenState createState() => _AlerteScreenState();
 }
 
-class _AlerteScreenState extends State<AlerteScreen> {
+class _AlerteScreenState extends State<AlerteScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  bool isLoadingAlerts = false;
+  bool isLoadingNotifications = false;
   List<dynamic> alerts = [];
-  bool isLoading = true;
+  List<dynamic> notifications = [];
+  bool isLoading = false;
+  bool isLoadingNotification = false;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     fetchAlertes();
+    fetchNotification();
   }
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
+
   Future<void> fetchAlertes() async {
     setState(() {
       isLoading = true;
@@ -35,23 +44,59 @@ class _AlerteScreenState extends State<AlerteScreen> {
           'Authorization': 'Bearer ${widget.token}',
         },
       );
+      print('Alertes Response Status: ${response.statusCode}');
+      print('Alertes Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData != null) {
-          setState(() {
-            alerts = responseData;
-            isLoading = false;
-          });
-        } else {
-          throw Exception('Response data is null');
-        }
+        final List<dynamic> responseData = json.decode(response.body);
+        print('Alertes Response Data: $responseData');
+
+        setState(() {
+          alerts = responseData;
+          isLoading = false;
+        });
       } else {
-        throw Exception('Failed to load alertes: ${response.statusCode}');
+        print('Failed to load alerts');
+        throw Exception('Failed to load alerts: ${response.statusCode}');
       }
     } catch (error) {
       print('Error fetching alerts: $error');
       setState(() {
         isLoading = false;
+      });
+    }
+  }
+
+  Future<void> fetchNotification() async {
+    setState(() {
+      isLoadingNotifications = true;
+    });
+    try {
+      final response = await http.get(
+        Uri.parse('$address:$port/api/notification/getMOb'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+      print('Notifications Response Status: ${response.statusCode}');
+      print('Notifications Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> responseData = json.decode(response.body);
+        print('Notifications Response Data: $responseData');
+
+        setState(() {
+          notifications = responseData;
+          isLoadingNotifications = false;
+        });
+      } else {
+        print('Failed to load notifications');
+        throw Exception('Failed to load notifications: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching notifications: $error');
+      setState(() {
+        isLoadingNotifications = false;
       });
     }
   }
@@ -66,40 +111,56 @@ class _AlerteScreenState extends State<AlerteScreen> {
         ),
         backgroundColor: Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: fetchAlertes,
-          ),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'Alertes'),
+            Tab(text: 'Notifications'),
+          ],
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white54,
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildHistoriqueList(alerts, isLoadingAlerts),
+          _buildHistoriqueList(notifications, isLoadingNotifications),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : alerts.isEmpty
-              ? Center(child: Text('No alerts found'))
-              : RefreshIndicator(
-                  onRefresh: fetchAlertes,
-                  child: ListView.builder(
-                    itemCount: alerts.length,
-                    itemBuilder: (context, index) {
-                      final alert = alerts[index];
-                       final DateTime createdAt =
-                          DateTime.parse(alert['createdAt']);
-                      final String formattedDate =
-                          Jiffy(createdAt.toIso8601String()).yMMMMEEEEdjm;
+    );
+  }
 
-                      return Card(
-                        child: ListTile(
-                          leading: Icon(
-                            Icons.warning,
-                            color: Colors.red,
-                          ),
-                          title: Text(alert['message']),
-                          subtitle: Text('Created At: $formattedDate'),
+  Widget _buildHistoriqueList(List<dynamic> historique, bool isLoading) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 5.0),
+      child: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : historique.isEmpty
+              ? Center(child: Text('No alerts found'))
+              : ListView.builder(
+                  itemCount: historique.length,
+                  itemBuilder: (context, index) {
+                    final item = historique[index];
+                    final message = item['message'] ?? 'No message';
+                    final createdAt = item['createdAt'] != null
+                        ? DateTime.parse(item['createdAt']).toLocal()
+                        : DateTime.now();
+                    final formattedDate =
+                        '${createdAt.day}/${createdAt.month}/${createdAt.year} ${createdAt.hour}:${createdAt.minute}';
+
+                    return Card(
+                      child: ListTile(
+                        title: Text('Message: $message'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Created At: $formattedDate'),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
     );
   }
