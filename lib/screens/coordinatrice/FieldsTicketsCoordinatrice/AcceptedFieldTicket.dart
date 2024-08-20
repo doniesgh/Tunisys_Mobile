@@ -190,8 +190,7 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
-                            ),
+TicketDetailScreen(ticketId: tickets[index]['_id']),                            ),
                           );
                         },
                         subtitle: Column(

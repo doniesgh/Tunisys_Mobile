@@ -82,15 +82,15 @@ class _HistoriqueManagerScreenState extends State<HistoriqueManagerScreen> {
                         child: ListTile(
                           title: Text(
                               'Numéro Ticket: ${historiques['reference']}'),
-                          onTap: () {
+                          /*onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    TicketDetailScreen(ticket: historiques),
+                                    //TicketDetailScreen(ticket: historiques),
                               ),
                             );
-                          },
+                          },*/
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

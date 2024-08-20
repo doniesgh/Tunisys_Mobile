@@ -101,6 +101,31 @@ class _AlerteScreenState extends State<AlerteScreen>
     }
   }
 
+  Future<void> deleteNotification(String id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$address:$port/api/notification/delete/$id'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          notifications.removeWhere((item) => item['id'] == id);
+        });
+        await fetchNotification();
+        print('Notification deleted successfully');
+      } else {
+        print('Failed to delete notification');
+        throw Exception(
+            'Failed to delete notification: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error deleting notification: $error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,20 +149,23 @@ class _AlerteScreenState extends State<AlerteScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildHistoriqueList(alerts, isLoadingAlerts),
-          _buildHistoriqueList(notifications, isLoadingNotifications),
+          _buildHistoriqueList(alerts, isLoadingAlerts, false),
+          _buildHistoriqueList(notifications, isLoadingNotifications, true),
         ],
       ),
     );
   }
 
-  Widget _buildHistoriqueList(List<dynamic> historique, bool isLoading) {
+  Widget _buildHistoriqueList(
+      List<dynamic> historique, bool isLoading, bool isNotification) {
     return Padding(
       padding: const EdgeInsets.only(top: 5.0),
       child: isLoading
           ? Center(child: CircularProgressIndicator())
           : historique.isEmpty
-              ? Center(child: Text('No alerts found'))
+              ? Center(
+                  child: Text(
+                      'No ${isNotification ? 'notifications' : 'alerts'} found'))
               : ListView.builder(
                   itemCount: historique.length,
                   itemBuilder: (context, index) {
@@ -158,6 +186,17 @@ class _AlerteScreenState extends State<AlerteScreen>
                             Text('Created At: $formattedDate'),
                           ],
                         ),
+                        trailing: isNotification
+                            ? IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () {
+                                  final id = item['_id'];
+                                  if (id != null) {
+                                    deleteNotification(id);
+                                  }
+                                },
+                              )
+                            : null,
                       ),
                     );
                   },

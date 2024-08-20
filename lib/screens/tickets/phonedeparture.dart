@@ -24,8 +24,9 @@ class _PhoneDepartureScreenState extends State<PhoneDepartureScreen> {
     super.initState();
     fetchAssignedTickets();
   }
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   Future<void> fetchAssignedTickets() async {
     setState(() {
       isLoading = true;
@@ -95,8 +96,8 @@ class _PhoneDepartureScreenState extends State<PhoneDepartureScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                TicketDetailScreen(ticket: tickets[index]),
+                            builder: (context) => TicketDetailScreen(
+                                ticketId: tickets[index]['_id']),
                           ),
                         );
                       },

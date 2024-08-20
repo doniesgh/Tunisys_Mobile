@@ -45,7 +45,8 @@ class _FieldTransferedScreenState extends State<FieldTransferedScreen> {
           setState(() {
             tickets = responseData
                 .where((ticket) =>
-                    ticket['status'] != null &&  ticket['status'] == 'TRANSFERED')
+                    ticket['status'] != null &&
+                    ticket['status'] == 'TRANSFERED')
                 .toList();
             isLoading = false;
           });
@@ -200,8 +201,8 @@ class _FieldTransferedScreenState extends State<FieldTransferedScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    TicketDetailScreen(ticket: tickets[index]),
+                                builder: (context) => TicketDetailScreen(
+                                    ticketId: tickets[index]['_id']),
                               ),
                             );
                           },
@@ -242,7 +243,7 @@ class _FieldTransferedScreenState extends State<FieldTransferedScreen> {
                           ),
                           trailing: ElevatedButton(
                             onPressed: () {
-                              handleAcceptTicket(tickets[index]['_id']);
+                              handleAcceptTicket(tickets[index]['id']);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(255, 171, 4, 4),

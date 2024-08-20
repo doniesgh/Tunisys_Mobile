@@ -56,8 +56,8 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
     }
   }
 
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,8 +97,8 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['_id']),
                             ),
                           );
                         },
@@ -107,7 +107,7 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
                           children: [
                             Text(tickets[index]['status']),
                             Text(tickets[index]['service_station']),
-                             if (technicien != null)
+                            if (technicien != null)
                               Text(
                                 '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',
                               )

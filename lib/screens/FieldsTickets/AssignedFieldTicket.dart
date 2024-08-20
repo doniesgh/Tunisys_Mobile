@@ -201,8 +201,8 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    TicketDetailScreen(ticket: tickets[index]),
+                                builder: (context) => TicketDetailScreen(
+                                    ticketId: tickets[index]['_id']),
                               ),
                             );
                           },

@@ -1,17 +1,54 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:todo/screens/config/config_service.dart';
 
-class TicketDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> ticket;
+class TicketDetailScreen extends StatefulWidget {
+  final String ticketId; // Receive ticket ID as a parameter
 
-  TicketDetailScreen({required this.ticket});
+  TicketDetailScreen({required this.ticketId});
+
+  @override
+  _TicketDetailScreenState createState() => _TicketDetailScreenState();
+}
+
+class _TicketDetailScreenState extends State<TicketDetailScreen> {
+  Map<String, dynamic>? ticket;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTicketDetails();
+  }
+
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
+  // Fetch ticket details by ID
+  Future<void> fetchTicketDetails() async {
+    final url = '$address:$port/api/ticket/${widget.ticketId}';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          ticket = jsonDecode(response.body);
+          isLoading = false;
+        });
+      } else {
+        print('Failed to load ticket details');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching ticket details: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +61,157 @@ class TicketDetailScreen extends StatelessWidget {
       }
     }
 
-    bool isApproved = ticket['status'] == 'APPROVED';
+    Uint8List? imageBytes;
+    if (ticket != null &&
+        ticket!['image'] != null &&
+        ticket!['image'] is String) {
+      try {
+        imageBytes = base64Decode(ticket!['image']);
+      } catch (e) {
+        print('Error decoding base64 image: $e');
+      }
+    }
+    String formatDateTime(String? dateTimeString) {
+      if (dateTimeString == null) return 'Not yet';
 
-    /*
+      try {
+        final dateTime = DateTime.parse(dateTimeString).toLocal();
+        return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}';
+      } catch (e) {
+        return 'Invalid date';
+      }
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Ticket Details',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        ),
+        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        toolbarHeight: 60,
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ticket == null
+              ? Center(child: Text('Failed to load ticket details'))
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ticket Reference: ${ticket!['reference']?.toString() ?? 'Unknown'}',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                          'Client: ${ticket!['client']?['name']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'Agence: ${ticket!['agence']?['agence']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'Agence Adresse: ${ticket!['agence']?['adresse']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'Agence Localisation: ${ticket!['agence']?['localisation']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'Agence Gouvernorat: ${ticket!['agence']?['gouvernourat']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'Equipement: ${ticket!['equipement']?['numero_serie']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'Service Type: ${ticket!['service_type']?.toString() ?? 'N/A'}'),
+                      Text('Type: ${ticket!['type']?.toString() ?? 'N/A'}'),
+                      Text('Status: ${ticket!['status']?.toString() ?? 'N/A'}'),
+                      Text('Note: ${ticket!['note']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'QR Code: ${ticket!['codeqrequipement']?.toString() ?? 'N/A'}'),
+                      Text(
+                          'Solution: ${ticket!['solution']?.toString() ?? 'Not Yet'}'),
+                      Text(
+                        'receiving Time: ${formatDateTime(ticket!['created_at'])}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Accepting Time: ${formatDateTime(ticket!['accepting_time'])}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Starting Time: ${formatDateTime(ticket!['starting_time'])}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Solving Time: ${formatDateTime(ticket!['solving_time'])}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'Completion Time: ${formatDateTime(ticket!['completion_time'])}',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      if (ticket!['raison_transfert'] != null) ...[
+                        Text(
+                          'Raison Transfert: ${ticket!['raison_transfert']?.toString() ?? 'N/A'}',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        Text(
+                          'Technicien Firstname: ${ticket!['technicien_transfer']?['firstname']?.toString() ?? 'N/A'}',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        Text(
+                          'Technicien Lastname: ${ticket!['technicien_transfer']?['lastname']?.toString() ?? 'N/A'}',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        Text(
+                          'Transfering Time: ${formatDateTime(ticket!['transfering_time'])}',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                      if (imageBytes != null) Image.memory(imageBytes!),
+                    ],
+                  ),
+                ),
+    );
+  }
+}
+
+/*
+            SizedBox(height: 20),
+            Text(
+              'Photo Fiche Intervention',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            if (imageBytes != null && imageBytes.isNotEmpty) ...[
+              Container(
+                constraints: BoxConstraints(
+                    maxHeight: 300), // Limite de hauteur pour l'image
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: 0,
+                      maxHeight: 300,
+                    ),
+                    child: Image.memory(
+                      imageBytes,
+                      fit: BoxFit
+                          .contain, // Redimensionner l'image pour la faire tenir dans le conteneur
+                    ),
+                  ),
+                ),
+              ),
+            ] else ...[
+              Text('No image available'),
+            ],
+            SizedBox(height: 20),
+            // Afficher le bouton si le statut est 'APPROVED'
+            if (isApproved)
+              ElevatedButton(
+                onPressed: () {
+                  // Code pour télécharger le PDF ou autre action
+                },
+                child: Text('Download PDF'),
+              ),*/
+
+ /*
     Future<void> downloadPdf() async {
       final pdf = pw.Document();
 
@@ -263,79 +448,3 @@ class TicketDetailScreen extends StatelessWidget {
       }
     }
     */
-
-    // Décoder l'image de base64
-    Uint8List? imageBytes;
-    if (ticket['image'] != null && ticket['image'] is String) {
-      try {
-        imageBytes = base64Decode(ticket['image']);
-      } catch (e) {
-        print('Error decoding base64 image: $e');
-      }
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Ticket Details',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
-        toolbarHeight: 60,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ticket Reference: ${ticket['reference'] ?? 'Unknown'}',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text('Client: ${ticket['client']?['name'] ?? 'N/A'}'),
-            Text('Agence: ${ticket['agence']?['agence'] ?? 'N/A'}'),
-            Text('Agence: ${ticket['agence']?['agence'] ?? 'N/A'}'),
-/*
-            SizedBox(height: 20),
-            Text(
-              'Photo Fiche Intervention',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            if (imageBytes != null && imageBytes.isNotEmpty) ...[
-              Container(
-                constraints: BoxConstraints(
-                    maxHeight: 300), // Limite de hauteur pour l'image
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: 0,
-                      maxHeight: 300,
-                    ),
-                    child: Image.memory(
-                      imageBytes,
-                      fit: BoxFit
-                          .contain, // Redimensionner l'image pour la faire tenir dans le conteneur
-                    ),
-                  ),
-                ),
-              ),
-            ] else ...[
-              Text('No image available'),
-            ],
-            SizedBox(height: 20),
-            // Afficher le bouton si le statut est 'APPROVED'
-            if (isApproved)
-              ElevatedButton(
-                onPressed: () {
-                  // Code pour télécharger le PDF ou autre action
-                },
-                child: Text('Download PDF'),
-              ),*/
-          ],
-        ),
-      ),
-    );
-  }
-}

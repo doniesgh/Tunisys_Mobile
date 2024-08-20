@@ -98,8 +98,8 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['_id']),
                             ),
                           );
                         },

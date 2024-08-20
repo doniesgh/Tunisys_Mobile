@@ -189,8 +189,8 @@ class _PhoneAssignedScreenState extends State<PhoneAssignedScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['_id']),
                             ),
                           );
                         },

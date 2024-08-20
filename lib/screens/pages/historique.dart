@@ -147,7 +147,7 @@ class _HistoriqueScreenState extends State<HistoriqueScreen>
                       child: ListTile(
                         title:
                             Text('Numéro Ticket: ${historiques['reference']}'),
-                        onTap: () {
+                       /* onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -155,7 +155,7 @@ class _HistoriqueScreenState extends State<HistoriqueScreen>
                                   TicketDetailScreen(ticket: historiques),
                             ),
                           );
-                        },
+                        },*/
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

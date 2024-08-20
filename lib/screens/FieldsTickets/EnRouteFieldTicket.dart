@@ -200,44 +200,41 @@ class _FieldEnRouteScreenState extends State<FieldEnRouteScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['_id']),
                             ),
                           );
                         },
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                               Row(
-                                children: [
-                                  Text(
-                                    "Status: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(tickets[index]['status']),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Client: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(tickets[index]['client']['name']),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Agence: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(tickets[index]['agence']['agence']),
-                                ],
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Status: ",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(tickets[index]['status']),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Client: ",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(tickets[index]['client']['name']),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Agence: ",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(tickets[index]['agence']['agence']),
+                              ],
+                            ),
                           ],
                         ),
                         trailing: ElevatedButton(

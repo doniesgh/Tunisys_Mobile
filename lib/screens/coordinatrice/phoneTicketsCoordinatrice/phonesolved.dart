@@ -24,8 +24,8 @@ class _PhoneSolvedScreenState extends State<PhoneSolvedScreen> {
     fetchAssignedTickets();
   }
 
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   Future<void> fetchAssignedTickets() async {
     setState(() {
       isLoading = true;
@@ -100,8 +100,8 @@ class _PhoneSolvedScreenState extends State<PhoneSolvedScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: ticket),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['id']),
                             ),
                           );
                         },

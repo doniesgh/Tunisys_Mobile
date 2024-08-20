@@ -18,8 +18,8 @@ class PhoneAssignedScreen extends StatefulWidget {
 class _PhoneAssignedScreenState extends State<PhoneAssignedScreen> {
   bool isLoading = false;
   List<dynamic> tickets = [];
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   @override
   void initState() {
     super.initState();
@@ -187,8 +187,8 @@ class _PhoneAssignedScreenState extends State<PhoneAssignedScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['id']),
                             ),
                           );
                         },

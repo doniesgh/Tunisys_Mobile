@@ -8,7 +8,7 @@ import 'package:todo/screens/tickets/ticketDetails.dart';
 class PhoneSolvedScreen extends StatefulWidget {
   final String token;
   final String? email;
-  
+
   const PhoneSolvedScreen({Key? key, required this.token, this.email})
       : super(key: key);
   @override
@@ -23,8 +23,9 @@ class _PhoneSolvedScreenState extends State<PhoneSolvedScreen> {
     super.initState();
     fetchAssignedTickets();
   }
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   Future<void> fetchAssignedTickets() async {
     setState(() {
       isLoading = true;
@@ -96,8 +97,8 @@ class _PhoneSolvedScreenState extends State<PhoneSolvedScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['_id']),
                             ),
                           );
                         },
@@ -105,7 +106,7 @@ class _PhoneSolvedScreenState extends State<PhoneSolvedScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(tickets[index]['status']),
-                                                      ],
+                          ],
                         ),
                         trailing: ElevatedButton(
                           onPressed: () {

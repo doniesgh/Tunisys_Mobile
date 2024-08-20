@@ -16,7 +16,7 @@ class PhoneArrivedScreen extends StatefulWidget {
 }
 
 class _PhoneArrivedScreenState extends State<PhoneArrivedScreen> {
- bool isLoading = false;
+  bool isLoading = false;
   List<dynamic> tickets = [];
 
   @override
@@ -24,8 +24,9 @@ class _PhoneArrivedScreenState extends State<PhoneArrivedScreen> {
     super.initState();
     fetchAssignedTickets();
   }
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
 
   Future<void> fetchAssignedTickets() async {
     setState(() {
@@ -71,7 +72,7 @@ class _PhoneArrivedScreenState extends State<PhoneArrivedScreen> {
         ),
         backgroundColor: Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
-         actions: [
+        actions: [
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
@@ -92,23 +93,23 @@ class _PhoneArrivedScreenState extends State<PhoneArrivedScreen> {
                   itemBuilder: (context, index) {
                     return ListTile(
                       title: Text(tickets[index]['reference']),
-                       onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
-                            ),
-                          );
-                        },
- subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(tickets[index]['status']),
-                            Text(tickets[index]['service_station']),
-                          ],
-                        ), 
-                                           );
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TicketDetailScreen(
+                                ticketId: tickets[index]['_id']),
+                          ),
+                        );
+                      },
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(tickets[index]['status']),
+                          Text(tickets[index]['service_station']),
+                        ],
+                      ),
+                    );
                   },
                 ),
     );

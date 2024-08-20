@@ -26,8 +26,8 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
     fetchAssignedTickets();
   }
 
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
 
   Future<void> fetchAssignedTickets() async {
     setState(() {
@@ -36,7 +36,6 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
     try {
       final response = await http.get(
         Uri.parse('$address:$port/api/ticket/field'),
-       
       );
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -90,7 +89,7 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
               : ListView.builder(
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
-                     var ticket = tickets[index];
+                    var ticket = tickets[index];
                     var technicien = ticket['technicien'];
                     return Card(
                       margin: EdgeInsets.all(10),
@@ -100,8 +99,8 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: tickets[index]),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['_id']),
                             ),
                           );
                         },
@@ -110,7 +109,7 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
                           children: [
                             Text(tickets[index]['status']),
                             Text(tickets[index]['service_station']),
-                             if (technicien != null)
+                            if (technicien != null)
                               Text(
                                 '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',
                               )
@@ -118,7 +117,6 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
                               Text('N/A'),
                           ],
                         ),
-                      
                       ),
                     );
                   },

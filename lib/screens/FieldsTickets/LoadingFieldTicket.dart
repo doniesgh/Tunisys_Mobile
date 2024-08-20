@@ -109,8 +109,7 @@ class _FieldLoadingScreenState extends State<FieldLoadingScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => TicketDetailScreen(
-                                        ticket: tickets[index]),
+                                    builder: (context) => TicketDetailScreen(ticketId: tickets[index]['_id']),
                                   ),
                                 );
                               },

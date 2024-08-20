@@ -72,7 +72,6 @@ class FirebaseApi {
     // Optionally, handle foreground messages if you want to display an in-app alert
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       // Handle the message or show a notification using a package like flutter_local_notifications
-      print('Message received while in foreground: ${message.notification?.title ?? ''}');
-    });
+     });
   }
 }
