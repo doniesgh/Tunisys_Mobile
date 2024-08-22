@@ -1,5 +1,5 @@
 import 'dart:ffi';
-
+import 'package:flutter/foundation.dart'; // For kReleaseMode
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +19,9 @@ import 'package:todo/screens/tickets/phoneloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
@@ -37,7 +40,13 @@ void main() async {
   print(
       "Retrieved from SharedPreferences - Token: $token, Email: $email, Role: $userRole, Id: $id");
 
-  runApp(MyApp(token: token, email: email, userRole: userRole, id: id));
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) =>
+          MyApp(token: token, email: email, userRole: userRole, id: id),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

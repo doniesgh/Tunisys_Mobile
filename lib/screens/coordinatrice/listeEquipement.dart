@@ -3,19 +3,19 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:todo/screens/coordinatrice/listeAgence.dart';
+import 'package:todo/screens/coordinatrice/equipementDetails.dart';
 
-class ListeClientScreen extends StatefulWidget {
+class ListeEquipementScreen extends StatefulWidget {
   final String token;
 
-  ListeClientScreen({required this.token});
+  ListeEquipementScreen({required this.token});
 
   @override
-  _ListeClientScreenScreenState createState() =>
-      _ListeClientScreenScreenState();
+  _ListeEquipementScreenState createState() => _ListeEquipementScreenState();
 }
 
-class _ListeClientScreenScreenState extends State<ListeClientScreen> {
-  List<dynamic> clients = [];
+class _ListeEquipementScreenState extends State<ListeEquipementScreen> {
+  List<dynamic> equipements = [];
   bool isLoading = true;
 
   @override
@@ -32,13 +32,13 @@ class _ListeClientScreenScreenState extends State<ListeClientScreen> {
     });
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/client/list'),
+        Uri.parse('$address:$port/api/equi/list'),
       );
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData != null) {
           setState(() {
-            clients = responseData;
+            equipements = responseData;
             isLoading = false;
           });
         } else {
@@ -60,7 +60,7 @@ class _ListeClientScreenScreenState extends State<ListeClientScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Clients',
+          'Equipements',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
         backgroundColor: Color.fromRGBO(209, 77, 90, 1),
@@ -74,28 +74,43 @@ class _ListeClientScreenScreenState extends State<ListeClientScreen> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : clients.isEmpty
+          : equipements.isEmpty
               ? Center(child: Text('No clients found'))
               : RefreshIndicator(
                   onRefresh:
                       fetchClients, // Call fetchClients instead of fetchAlertes
                   child: ListView.builder(
-                    itemCount: clients.length,
+                    itemCount: equipements.length,
                     itemBuilder: (context, index) {
-                      final client = clients[index]; // Fetch individual client
+                      final equipement =
+                          equipements[index]; // Fetch individual client
                       return Card(
                         child: ListTile(
-                          title: Text(client['name']),
+                          title: Text(
+                              'Numero série: ${equipement['numero_serie'] ?? 'N/A'}'), // Serial number as title
+                          subtitle: Column(
+                            // Add other details below the title
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Type: ${equipement['type'] ?? 'N/A'}'),
+                              Text(
+                                  'Client: ${equipement['client']['name'] ?? 'N/A'}'), // Model details
+                              Text(
+                                  'Agence: ${equipement['agence']['agence'] ?? 'N/A'}'), // Location details
+                            ],
+                          ),
+                          trailing: Icon(Icons.info_outline),
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ListeAgenceScreen(clientName: client['name'],
-                                    clientId: client['_id'],
-                                    token: widget.token),
+                                builder: (context) => EquipmentDetailScreen(
+                                  equipementId: equipement[
+                                      '_id'], // Pass the equipment ID or relevant data
+                                ),
                               ),
                             );
-                          },
+                          }, // Add an icon at the end
                         ),
                       );
                     },

@@ -6,9 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
 
 class EquipmentDetailScreen extends StatefulWidget {
-  final String equipmentId;
+  final String equipementId;
 
-  EquipmentDetailScreen({required this.equipmentId});
+  const EquipmentDetailScreen({Key? key, required this.equipementId})
+      : super(key: key);
 
   @override
   _EquipmentDetailScreenState createState() => _EquipmentDetailScreenState();
@@ -55,7 +56,7 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
   Future<void> fetchEquipmentDetails() async {
     try {
       final response = await http
-          .get(Uri.parse('$address:$port/api/equi/${widget.equipmentId}'));
+          .get(Uri.parse('$address:$port/api/equi/${widget.equipementId}'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -80,9 +81,9 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
         appBar: AppBar(
           title: Text(
             'Equipment Details',
-            style: TextStyle(color: Colors.black, fontSize: 24),
+            style: TextStyle(color: Colors.white, fontSize: 24),
           ),
-          backgroundColor: Color(0xFFF2D5D5),
+          backgroundColor: Color.fromRGBO(209, 77, 90, 1),
         ),
         body: Container(
           child: isLoading
@@ -108,13 +109,14 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                           Text(
                               'Modéle écran: ${equipment!['modele']['modele_ecran'] ?? 'Non rempli'}'),
                           Text('Type: ${equipment!['type'] ?? 'Non rempli'}'),
-                         /* Text(
+                          /* Text(
                               'Date mise en service : ${formatDate(equipment!['date_mise_enservice'] ?? 'Non rempli')}'),
                           Text(
                               'Date installation physique : ${formatDate(equipment!['date_installation_physique'] ?? 'Non rempli')}'),
                           Text(
                               'Date Livraison : ${formatDate(equipment!['date_livraison'] ?? 'Non rempli')}'),
-                          */Text(
+                          */
+                          Text(
                             'Autre données',
                             style: TextStyle(
                                 fontSize: 16,
@@ -141,7 +143,8 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                               'Début maintenance: ${formatDate(equipment!['date_debut_maintenance'] ?? 'Non rempli')}'),
                           Text(
                               'Fin maintenance : ${formatDate(equipment!['date_end_maintenance'] ?? 'Non rempli')}'),
-                        */  Text(
+                        */
+                          Text(
                               'Geolocalisation : ${equipment!['geolocalisation'] ?? 'Non rempli'}'),
                           Text(
                               'Sous adressse: ${equipment!['sous_adresse'] ?? 'Non rempli'}'),

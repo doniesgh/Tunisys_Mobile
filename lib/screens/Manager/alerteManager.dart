@@ -92,8 +92,7 @@ class _AlerteCoordinatriceScreenState extends State<AlerteManagerScreen> {
                       final alert = alerts[index];
                       final DateTime createdAt =
                           DateTime.parse(alert['createdAt']);
-                      final String formattedDate =
-                          Jiffy(createdAt.toIso8601String()).yMMMMEEEEdjm;
+                      
 
                       return Card(
                           child: ListTile(
@@ -115,7 +114,6 @@ class _AlerteCoordinatriceScreenState extends State<AlerteManagerScreen> {
                                   Text(
                                       'Localisation: ${alert['ticketId']['service_station']}'),
                                   Text('Alert: ${alert['message']}'),
-                                  Text('Created At: $formattedDate'),
                                 ],
                               )));
                     },

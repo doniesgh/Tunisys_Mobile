@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:jiffy/jiffy.dart';
 import 'package:todo/screens/config/config_service.dart';
+import 'package:intl/intl.dart';
 
 class ListeContratScreen extends StatefulWidget {
   final String token;
@@ -24,8 +24,8 @@ class _ListeContratScreenScreenState extends State<ListeContratScreen> {
     fetchContrats();
   }
 
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   Future<void> fetchContrats() async {
     setState(() {
       isLoading = true;
@@ -82,6 +82,9 @@ class _ListeContratScreenScreenState extends State<ListeContratScreen> {
                     itemCount: contrats.length,
                     itemBuilder: (context, index) {
                       final contrat = contrats[index];
+                      final effectiveDate = contrat['effective_date'];
+                      final terminationDate = contrat['termination_date'];
+                      final createdAt = contrat['createdAt'];
                       return Column(
                         children: [
                           ListTile(
@@ -119,11 +122,11 @@ class _ListeContratScreenScreenState extends State<ListeContratScreen> {
                                 Text(
                                     'Client: ${contrat['client'][0]['client'] ?? 'N/A'}'),
                                 Text(
-                                    'Effective Date: ${Jiffy(contrat['effective_date']).format('yyyy/MM/dd') ?? 'N/A'}'),
+                                    'Effective Date: ${effectiveDate != null ? DateFormat('yyyy/MM/dd').format(DateTime.parse(effectiveDate)) : 'N/A'}'),
                                 Text(
-                                    'Termination Date: ${Jiffy(contrat['termination_date']).format('yyyy/MM/dd') ?? 'N/A'}'),
+                                    'Termination Date: ${terminationDate != null ? DateFormat('yyyy/MM/dd').format(DateTime.parse(terminationDate)) : 'N/A'}'),
                                 Text(
-                                    'Created At: ${Jiffy(contrat['createdAt']).format('yyyy/MM/dd HH:mm') ?? 'N/A'}'),
+                                    'Created At: ${createdAt != null ? DateFormat('yyyy/MM/dd HH:mm').format(DateTime.parse(createdAt)) : 'N/A'}'),
                               ],
                             ),
                           ),

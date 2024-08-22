@@ -85,8 +85,7 @@ class _AlerteCoordinatriceScreenState extends State<AlerteCoordinatriceScreen> {
                       final alert = alerts[index];
                       final DateTime createdAt =
                           DateTime.parse(alert['createdAt']);
-                      final String formattedDate =
-                          Jiffy(createdAt.toIso8601String()).yMMMMEEEEdjm;
+                      final String formattedDate = Jiffy.parseFromDateTime(createdAt).yMMMMEEEEdjm;
 
                       return Card(
                           child: ListTile(
