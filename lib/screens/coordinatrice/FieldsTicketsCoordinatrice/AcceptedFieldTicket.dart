@@ -57,99 +57,6 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
     }
   }
 
-  Future<void> handleAcceptTicket(String ticketId) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Êtes-vous sûr  de partir ?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text('Oui, je vais partir'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result == true) {
-      try {
-        var address = ConfigService().adresse;
-        var port = ConfigService().port;
-        final response = await http.put(
-          Uri.parse('$address:$port/api/ticket/departure/$ticketId'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({'status': 'LEFT'}),
-        );
-
-        if (response.statusCode == 200) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Partis avec succès!'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      fetchAssignedTickets();
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        } else {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Erreur ticket"),
-                content: Text("Veuillez réessayer plus tard"),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      } catch (error) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Erreur "),
-              content: Text("Veuillez réessayer plus tard"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,7 +87,9 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
                     var ticket = tickets[index];
-                    var technicien = ticket['technicien'];
+                    var technicien = ticket['technicien2'];
+                    var technicienTransfer = ticket['technicien_transfer'];
+
                     return Card(
                       margin: EdgeInsets.all(10),
                       child: ListTile(
@@ -189,21 +98,23 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-TicketDetailScreen(ticketId: tickets[index]['_id']),                            ),
+                              builder: (context) => TicketDetailScreen(
+                                  ticketId: tickets[index]['_id']),
+                            ),
                           );
                         },
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(tickets[index]['status']),
-                            Text(tickets[index]['service_station']),
                             if (technicien != null)
                               Text(
                                 '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',
-                              )
-                            else
-                              Text('N/A'),
+                              ),
+                            if (technicienTransfer != null)
+                              Text(
+                                '${technicienTransfer['firstname'] ?? ''} ${technicienTransfer['lastname'] ?? ''}',
+                              ),
                           ],
                         ),
                       ),

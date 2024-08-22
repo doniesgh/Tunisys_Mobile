@@ -106,7 +106,6 @@ class _PhoneLoadingScreenState extends State<PhoneLoadingScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(tickets[index]['status']),
-                              Text(tickets[index]['service_station']),
                               if (technicien != null)
                                 Text(
                                   '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',

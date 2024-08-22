@@ -109,7 +109,6 @@ class _PhoneSolvedScreenState extends State<PhoneSolvedScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(ticket['status']),
-                            Text(ticket['service_station']),
                             if (technicien != null)
                               Text(
                                 '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',

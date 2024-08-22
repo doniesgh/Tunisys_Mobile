@@ -89,7 +89,9 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
                     var ticket = tickets[index];
-                    var technicien = ticket['technicien'];
+                    var technicien = ticket['technicien2'];
+                    var technicienTransfer = ticket['technicien_transfer'];
+
                     return Card(
                       margin: EdgeInsets.all(10),
                       child: ListTile(
@@ -107,13 +109,14 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(tickets[index]['status']),
-                            Text(tickets[index]['service_station']),
                             if (technicien != null)
                               Text(
                                 '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',
-                              )
-                            else
-                              Text('N/A'),
+                              ),
+                            if (technicienTransfer != null)
+                              Text(
+                                '${technicienTransfer['firstname'] ?? ''} ${technicienTransfer['lastname'] ?? ''}',
+                              ),
                           ],
                         ),
                       ),

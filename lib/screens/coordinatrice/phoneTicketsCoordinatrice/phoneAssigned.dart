@@ -196,7 +196,6 @@ class _PhoneAssignedScreenState extends State<PhoneAssignedScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(tickets[index]['status']),
-                            Text(tickets[index]['service_station']),
                             if (technicien != null)
                               Text(
                                 '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',

@@ -32,15 +32,19 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
       isLoading = true;
     });
     try {
-      final response = await http.get(
-        Uri.parse('$address:$port/api/ticket/field'),
-      );
+      var address = ConfigService().adresse;
+      var port = ConfigService().port;
+      final response =
+          await http.get(Uri.parse('$address:$port/api/ticket/field'));
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData != null) {
           setState(() {
+            // Filter tickets with status 'ACCEPTED' or 'TRANSFERRED'
             tickets = responseData
-                .where((ticket) => ticket['status'] == 'ASSIGNED')
+                .where((ticket) =>
+                    ticket['status'] == 'ACCEPTED' ||
+                    ticket['status'] == 'TRANSFERED')
                 .toList();
             isLoading = false;
           });
@@ -51,7 +55,7 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
         throw Exception('Failed to load tickets: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching alerts: $error');
+      print('Error fetching tickets: $error');
       setState(() {
         isLoading = false;
       });
@@ -179,7 +183,9 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
                     var ticket = tickets[index];
-                    var technicien = ticket['technicien'];
+                    var technicien = ticket['technicien2'];
+                    var technicienTransfer = ticket['technicien_transfer'];
+
                     return Card(
                       margin: EdgeInsets.all(10),
                       child: ListTile(
@@ -197,13 +203,15 @@ class _FieldAssignedScreenState extends State<FieldAssignedScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(tickets[index]['status']),
-                            Text(tickets[index]['service_station']),
                             if (technicien != null)
                               Text(
                                 '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',
-                              )
-                            else
-                              Text('N/A'),
+                              ),
+
+                             if (technicienTransfer != null)
+                              Text(
+                                '${technicienTransfer['firstname'] ?? ''} ${technicienTransfer['lastname'] ?? ''}',
+                              ),
                           ],
                         ),
                       ),
