@@ -24,8 +24,8 @@ class _AlerteCoordinatriceScreenState extends State<AlerteCoordinatriceScreen> {
     fetchAlertes();
   }
 
-    var address = ConfigService().adresse;
-    var port = ConfigService().port;
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   Future<void> fetchAlertes() async {
     setState(() {
       isLoading = true;
@@ -85,7 +85,8 @@ class _AlerteCoordinatriceScreenState extends State<AlerteCoordinatriceScreen> {
                       final alert = alerts[index];
                       final DateTime createdAt =
                           DateTime.parse(alert['createdAt']);
-                      final String formattedDate = Jiffy.parseFromDateTime(createdAt).yMMMMEEEEdjm;
+                      final String formattedDate =
+                          Jiffy.parseFromDateTime(createdAt).yMMMMEEEEdjm;
 
                       return Card(
                           child: ListTile(
@@ -104,8 +105,6 @@ class _AlerteCoordinatriceScreenState extends State<AlerteCoordinatriceScreen> {
                                   ),
                                   Text(
                                       'Reference Ticket: ${alert['ticketId']['reference']}'),
-                                  Text(
-                                      'Localisation: ${alert['ticketId']['service_station']}'),
                                   Text('Alert: ${alert['message']}'),
                                   Text('Created At: $formattedDate'),
                                 ],

@@ -108,13 +108,14 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                           Text(
                               'Modéle écran: ${equipment!['modele']['modele_ecran'] ?? 'Non rempli'}'),
                           Text('Type: ${equipment!['type'] ?? 'Non rempli'}'),
-                         /* Text(
+                          /* Text(
                               'Date mise en service : ${formatDate(equipment!['date_mise_enservice'] ?? 'Non rempli')}'),
                           Text(
                               'Date installation physique : ${formatDate(equipment!['date_installation_physique'] ?? 'Non rempli')}'),
                           Text(
                               'Date Livraison : ${formatDate(equipment!['date_livraison'] ?? 'Non rempli')}'),
-                          */Text(
+                          */
+                          Text(
                             'Autre données',
                             style: TextStyle(
                                 fontSize: 16,
@@ -141,7 +142,8 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                               'Début maintenance: ${formatDate(equipment!['date_debut_maintenance'] ?? 'Non rempli')}'),
                           Text(
                               'Fin maintenance : ${formatDate(equipment!['date_end_maintenance'] ?? 'Non rempli')}'),
-                        */  Text(
+                        */
+                          Text(
                               'Geolocalisation : ${equipment!['geolocalisation'] ?? 'Non rempli'}'),
                           Text(
                               'Sous adressse: ${equipment!['sous_adresse'] ?? 'Non rempli'}'),
