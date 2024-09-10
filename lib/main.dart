@@ -18,6 +18,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:device_preview/device_preview.dart';
+
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
@@ -101,17 +102,20 @@ class MyApp extends StatelessWidget {
           : isCoordinatrice
               ? HomeCordinatrice(
                   token: token!,
-                  email: email!,
+                  email:
+                      email ?? '', // Default to empty string if email is null
                 )
               : isManager
                   ? HomeManager(
                       token: token!,
-                      email: email!,
+                      email: email ??
+                          '', // Default to empty string if email is null
                     )
                   : HomeScreen(
                       token: token!,
-                      email: email!,
-                      id: id!,
+                      email: email ??
+                          '', // Default to empty string if email is null
+                      id: id ?? '', // Default to empty string if id is null
                     ),
     );
   }

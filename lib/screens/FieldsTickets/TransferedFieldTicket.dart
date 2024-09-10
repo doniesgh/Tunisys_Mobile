@@ -243,7 +243,7 @@ class _FieldTransferedScreenState extends State<FieldTransferedScreen> {
                           ),
                           trailing: ElevatedButton(
                             onPressed: () {
-                              handleAcceptTicket(tickets[index]['id']);
+                              handleAcceptTicket(tickets[index]['_id']);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(255, 171, 4, 4),
