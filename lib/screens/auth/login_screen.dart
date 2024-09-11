@@ -57,7 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       if (emailController.text.isNotEmpty &&
           passwordController.text.isNotEmpty) {
-
         await _getFcmToken();
         var loginBody = {
           "email": emailController.text,
@@ -69,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Utils.showToast("Logging in...");
         var address = ConfigService().adresse;
         var port = ConfigService().port;
-        var url = "$address:$port/api/user/login";
+        var url = "$address:$port/api/user/loginMob";
 
         var response = await http.post(
           Uri.parse(url),
@@ -152,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Utils.showToast("Error: $e");
     }
   }
-/*
+
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -160,8 +159,9 @@ class _LoginScreenState extends State<LoginScreen> {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      Utils.showToast("Location services are disabled.");
-      return;
+      Utils.showToast("Location services are disabled. Opening settings...");
+      await Geolocator.openLocationSettings(); // Open device location settings
+      return; // Exit the function and wait for the user to enable it
     }
 
     // Check location permission
@@ -187,56 +187,13 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         lat = '${position.latitude}';
         long = '${position.longitude}';
-        locationMessage = 'Latitude : $lat, longitude : $long';
+        locationMessage = 'Latitude: $lat, Longitude: $long';
       });
       print('Current position: $lat, $long');
     } catch (e) {
       Utils.showToast("Failed to get location: $e");
     }
   }
-*/
-Future<void> _getCurrentLocation() async {
-  bool serviceEnabled;
-  LocationPermission permission;
-
-  // Check if location services are enabled
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    Utils.showToast("Location services are disabled. Opening settings...");
-    await Geolocator.openLocationSettings(); // Open device location settings
-    return; // Exit the function and wait for the user to enable it
-  }
-
-  // Check location permission
-  permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      Utils.showToast("Location permissions are denied.");
-      return;
-    }
-  }
-
-  if (permission == LocationPermission.deniedForever) {
-    Utils.showToast("Location permissions are permanently denied.");
-    return;
-  }
-
-  // Get current position
-  try {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-
-    setState(() {
-      lat = '${position.latitude}';
-      long = '${position.longitude}';
-      locationMessage = 'Latitude: $lat, Longitude: $long';
-    });
-    print('Current position: $lat, $long');
-  } catch (e) {
-    Utils.showToast("Failed to get location: $e");
-  }
-}
 
   @override
   Widget build(BuildContext context) {
