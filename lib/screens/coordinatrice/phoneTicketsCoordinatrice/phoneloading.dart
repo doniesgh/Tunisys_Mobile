@@ -8,8 +8,7 @@ class PhoneLoadingScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const PhoneLoadingScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const PhoneLoadingScreen({super.key, required this.token, this.email});
 
   @override
   _PhoneLoadingScreenState createState() => _PhoneLoadingScreenState();
@@ -62,23 +61,23 @@ class _PhoneLoadingScreenState extends State<PhoneLoadingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Loading ...',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No loading tickets found.',
                     style: TextStyle(fontSize: 20),
@@ -90,15 +89,15 @@ class _PhoneLoadingScreenState extends State<PhoneLoadingScreen> {
                     var ticket = tickets[index];
                     var technicien = ticket['technicien'];
                     return Card(
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
                       child: ListTile(
                           title: Text(tickets[index]['reference']),
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => TicketDetailScreen(
-                                    ticketId: tickets[index]['id']),
+                                builder: (context) => TicketDetailScreenTech(
+                                    ticketId: tickets[index]['id'], ticket: null,),
                               ),
                             );
                           },
@@ -111,7 +110,7 @@ class _PhoneLoadingScreenState extends State<PhoneLoadingScreen> {
                                   '${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',
                                 )
                               else
-                                Text('N/A'),
+                                const Text('N/A'),
                             ],
                           )),
                     );

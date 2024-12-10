@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
 import 'package:todo/screens/config/config_service.dart';
 
 class HistoriqueScreen extends StatefulWidget {
   final String token;
-  HistoriqueScreen({required this.token});
+  const HistoriqueScreen({super.key, required this.token});
 
   @override
   _HistoriqueScreenState createState() => _HistoriqueScreenState();
@@ -51,7 +52,8 @@ class _HistoriqueScreenState extends State<HistoriqueScreen>
           setState(() {
             fieldApprovedHistorique = responseData
                 .where((ticket) =>
-                    ticket['status'] == 'APPROVED' && ticket['type'] == 'FIELD')
+                    ticket['status'] == 'VALIDATED' &&
+                    ticket['type'] == 'FIELD')
                 .toList();
             isFieldApprovedLoading = false;
           });
@@ -86,7 +88,8 @@ class _HistoriqueScreenState extends State<HistoriqueScreen>
           setState(() {
             phoneApprovedHistorique = responseData
                 .where((ticket) =>
-                    ticket['status'] == 'APPROVED' && ticket['type'] == 'PHONE')
+                    ticket['status'] == 'VALIDATED' &&
+                    ticket['type'] == 'PHONE')
                 .toList();
             isPhoneApprovedLoading = false;
           });
@@ -108,20 +111,26 @@ class _HistoriqueScreenState extends State<HistoriqueScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Historique',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: 'Phone Approved'),
-            Tab(text: 'Field Approved'),
+            Tab(
+              icon: Icon(Icons.phone, color: Color.fromRGBO(209, 77, 90, 1)),
+              text: 'Phone Validated',
+            ),
+            Tab(
+              icon: Icon(Icons.map, color: Color.fromRGBO(209, 77, 90, 1)),
+              text: 'Field Validated',
+            ),
           ],
-          labelColor: Colors.white, // Color for selected tab text
-          unselectedLabelColor: Colors.white54, // Color for unselected tab text
+          labelColor: Color.fromRGBO(209, 77, 90, 1),
+          unselectedLabelColor: const Color.fromARGB(207, 135, 135, 135),
         ),
       ),
       body: TabBarView(
@@ -134,52 +143,81 @@ class _HistoriqueScreenState extends State<HistoriqueScreen>
     );
   }
 
+  String formatDate(String isoDate) {
+    DateTime parsedDate = DateTime.parse(isoDate);
+    // Format date as 'dd/MM/yyyy HH:mm'
+    return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate.toLocal());
+  }
+  // String formatDate(String? dateString) {
+  //   if (dateString == null || dateString == 'N/A') {
+  //     return 'Unknown'; // Renvoie 'Unknown' si la date est absente
+  //   }
+  //   try {
+  //     DateTime parsedDate = DateTime.parse(dateString); // Parse la date
+  //     return DateFormat('dd/MM/yyyy')
+  //         .format(parsedDate); // Format en jour/mois/année
+  //   } catch (e) {
+  //     return 'Unknown'; // Si une erreur de parsing se produit
+  //   }
+  // }
+
   Widget _buildHistoriqueList(List<dynamic> historique, bool isLoading) {
     return Padding(
       padding: const EdgeInsets.only(top: 5.0),
       child: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : historique.isEmpty
-              ? Center(child: Text('No historique found'))
+              ? const Center(child: Text('No historique found'))
               : ListView.builder(
                   itemCount: historique.length,
                   itemBuilder: (context, index) {
-                    final histItem = historique[index];
-                    var technicien = histItem['technicien'];
-                    var technicienTransfer = histItem['technicien_transfer'];
-                    var technicien2 = histItem['technicien2'];
+                    final historiques = historique[index];
+
+                    // Formatage des dates
+                    final solvedAt = historiques['solving_time'] != null
+                        ? formatDate(historiques['solving_time'])
+                        : 'Unknown date';
+
+                    final validatedAt = historiques['validation_time'] != null
+                        ? formatDate(historiques['validation_time'])
+                        : 'Unknown date'; // Formatage pour validation_time
+
                     return Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 10.0),
+                      color: Colors.white,
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
                       child: ListTile(
-                        title: Text('Numéro Ticket: ${histItem['reference']}'),
-                        /* onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  TicketDetailScreen(ticket: historiques),
-                            ),
-                          );
-                        },*/
+                        leading: Icon(
+                          Icons.task,
+                          color: Color.fromRGBO(209, 77, 90, 1),
+                        ),
+                        title:
+                            Text('Numéro Ticket: ${historiques['reference']}'),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Client: ${histItem['client']['name']}'),
-                            Text('Type Ticket: ${histItem['type']}'),
-                            Text('Status: ${histItem['status']}'),
-                            if (technicien != null)
-                              Text(
-                                'Helpdesk : ${technicien['firstname'] ?? ''} ${technicien['lastname'] ?? ''}',
-                              ),
-                            if (technicien2 != null)
-                              Text(
-                                'Technicien :${technicien2['firstname'] ?? ''} ${technicien2['lastname'] ?? ''}',
-                              ),
-                            if (technicienTransfer != null)
-                              Text(
-                                'transféré au technicien : ${technicienTransfer['firstname'] ?? ''} ${technicienTransfer['lastname'] ?? ''}',
-                              ),
+                            Text('Type Ticket: ${historiques['type']}'),
+                            Text('Date Clôture: $solvedAt'),
+                            Text(
+                                'Date Validation: $validatedAt'), // Affichage de validation_time
                           ],
                         ),
+                        onTap: () {
+                          // Naviguer vers l'écran TicketDetails
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TicketDetailScreenTech(
+                                ticket: historiques,
+                                ticketId: '',
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },

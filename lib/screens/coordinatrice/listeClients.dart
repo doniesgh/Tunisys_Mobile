@@ -7,7 +7,7 @@ import 'package:todo/screens/coordinatrice/listeAgence.dart';
 class ListeClientScreen extends StatefulWidget {
   final String token;
 
-  ListeClientScreen({required this.token});
+  const ListeClientScreen({super.key, required this.token});
 
   @override
   _ListeClientScreenScreenState createState() =>
@@ -26,6 +26,7 @@ class _ListeClientScreenScreenState extends State<ListeClientScreen> {
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
+
   Future<void> fetchClients() async {
     setState(() {
       isLoading = true;
@@ -45,10 +46,10 @@ class _ListeClientScreenScreenState extends State<ListeClientScreen> {
           throw Exception('Response data is null');
         }
       } else {
-        throw Exception('Failed to load alertes: ${response.statusCode}');
+        throw Exception('Failed to load clients: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching alerts: $error');
+      print('Error fetching clients: $error');
       setState(() {
         isLoading = false;
       });
@@ -59,40 +60,67 @@ class _ListeClientScreenScreenState extends State<ListeClientScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Clients',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+          style: TextStyle(
+            color: Color.fromRGBO(209, 77, 90, 1),
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchClients,
+            color: Color.fromRGBO(209, 77, 90, 1), // Color for refresh icon
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : clients.isEmpty
-              ? Center(child: Text('No clients found'))
+              ? const Center(
+                  child: Text('No clients found',
+                      style: TextStyle(fontSize: 18, color: Colors.grey)))
               : RefreshIndicator(
-                  onRefresh:
-                      fetchClients, // Call fetchClients instead of fetchAlertes
+                  onRefresh: fetchClients,
                   child: ListView.builder(
                     itemCount: clients.length,
                     itemBuilder: (context, index) {
-                      final client = clients[index]; // Fetch individual client
+                      final client = clients[index];
                       return Card(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 15), // Margin for cards
+                        elevation: 5, // Added elevation for shadow effect
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(15), // Rounded corners
+                        ),
+                        color: Colors
+                            .grey[200], // Set card background to light gray
                         child: ListTile(
-                          title: Text(client['name']),
+                          contentPadding: const EdgeInsets.all(
+                              15), // Padding inside ListTile
+                          title: Text(
+                            client['name'],
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color.fromRGBO(
+                                  209, 77, 90, 1), // Set title color
+                            ),
+                          ),
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ListeAgenceScreen(clientName: client['name'],
-                                    clientId: client['_id'],
-                                    token: widget.token),
+                                builder: (context) => ListeAgenceScreen(
+                                  clientName: client['name'],
+                                  clientId: client['_id'],
+                                  token: widget.token,
+                                ),
                               ),
                             );
                           },

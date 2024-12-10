@@ -5,6 +5,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,13 +20,15 @@ class MyApp extends StatelessWidget {
 }
 
 class FieldTicket extends StatelessWidget {
+  const FieldTicket({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Page daccueil'),
+        title: const Text('Page daccueil'),
       ),
-      body: Center(
+      body: const Center(
         child: Text(
           'Bienvenue sur Field Ticket!',
           style: TextStyle(fontSize: 24),

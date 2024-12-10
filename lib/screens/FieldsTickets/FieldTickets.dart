@@ -15,33 +15,42 @@ import 'package:todo/screens/config/config_service.dart';
 class FieldTicketScreen extends StatefulWidget {
   final String token;
   final String? id;
-  const FieldTicketScreen({Key? key, required this.token, required this.id})
-      : super(key: key);
+  const FieldTicketScreen({super.key, required this.token, required this.id});
 
   @override
   _FieldTicketScreenState createState() => _FieldTicketScreenState();
 }
 
 class _FieldTicketScreenState extends State<FieldTicketScreen> {
+  final ConfigService configService = ConfigService();
   bool isLoading = false;
   int assignedCount = 0;
   int transferedCount = 0;
   int approuvedCount = 0;
   int acceptedCount = 0;
-  int enRouteCount = 0;
-  int arrivedCount = 0;
-  int loadingCount = 0;
+  int goingCount = 0;
+  int handledCount = 0;
   int solvedCount = 0;
   int reportedCount = 0;
-
+  int arrivedCount = 0;
+  int completedCount = 0;
   @override
   void initState() {
     super.initState();
+    _loadConfiguration();
     fetchTicketCounts(); // Appel initial pour récupérer les compteurs
+  }
+
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig(); // Charge la configuration
+    setState(() {
+      // Met à jour l'interface si nécessaire
+    });
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
+
   Future<void> fetchTicketCounts() async {
     setState(() {
       isLoading = true;
@@ -49,7 +58,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/ticket/count/${widget.id}'),
+        Uri.parse('$address:$port/api/ticket/countfield/${widget.id}'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
@@ -61,15 +70,15 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
           print(responseData);
           setState(() {
             assignedCount = responseData['assigned'] ?? 0;
-            transferedCount = responseData['transfered'] ?? 0;
-
+            arrivedCount = responseData['arrived'] ?? 0;
             approuvedCount = responseData['approuved'] ?? 0;
             acceptedCount = responseData['accepted'] ?? 0;
-            enRouteCount = responseData['enRoute'] ?? 0;
-            arrivedCount = responseData['arrived'] ?? 0;
-            loadingCount = responseData['loading'] ?? 0;
+            handledCount = responseData['handled'] ?? 0;
             solvedCount = responseData['solved'] ?? 0;
             reportedCount = responseData['reported'] ?? 0;
+            transferedCount = responseData['transfered'] ?? 0;
+            completedCount = responseData['completed'] ?? 0;
+            goingCount = responseData['going'] ?? 0;
             isLoading = false;
           });
         } else {
@@ -94,17 +103,17 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Process Tickets',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+        title: const Text(
+          'Process Field Tickets',
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : ListView(
                 children: [
                   const SizedBox(
@@ -114,7 +123,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                     children: [
                       Expanded(
                         child: buildTicketCard(
-                          'Assigned Tickets',
+                          'Assigned ',
                           assignedCount,
                           const Color(0xFFFF6868),
                           Icons.assignment,
@@ -133,10 +142,10 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildTicketCard(
-                          'Transfered Tickets',
+                          'Transfered ',
                           transferedCount,
                           const Color(0xFF80C4E9),
-                          Icons.check_circle,
+                          Icons.send,
                           () {
                             Navigator.push(
                               context,
@@ -158,10 +167,10 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                     children: [
                       Expanded(
                         child: buildTicketCard(
-                          'Accepted Tickets',
+                          'Accepted ',
                           acceptedCount,
                           const Color(0xFFFFB6B9),
-                          Icons.directions,
+                          Icons.done,
                           () {
                             Navigator.push(
                               context,
@@ -177,10 +186,10 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildTicketCard(
-                          'En Route Tickets',
-                          enRouteCount,
+                          'Going',
+                          goingCount,
                           const Color(0xFF61C0BF),
-                          Icons.location_on,
+                          Icons.directions_car,
                           () {
                             Navigator.push(
                               context,
@@ -201,10 +210,10 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                     children: [
                       Expanded(
                         child: buildTicketCard(
-                          'Arrived Tickets',
+                          'Arrived ',
                           arrivedCount,
-                          const Color.fromARGB(255, 204, 255, 0),
-                          Icons.hourglass_empty,
+                          const Color.fromARGB(255, 210, 176, 3),
+                          Icons.location_on,
                           () {
                             Navigator.push(
                               context,
@@ -220,10 +229,10 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildTicketCard(
-                          'Loading Tickets',
-                          loadingCount,
+                          'Handled ',
+                          handledCount,
                           Colors.orange,
-                          Icons.check_circle_outline,
+                          Icons.hourglass_empty,
                           () {
                             Navigator.push(
                               context,
@@ -244,10 +253,10 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                     children: [
                       Expanded(
                         child: buildTicketCard(
-                          'Solved Tickets',
-                          solvedCount,
-                          Colors.green,
-                          Icons.report_problem,
+                          'Completed ',
+                          completedCount,
+                          Colors.blue,
+                          Icons.check_circle_outline,
                           () {
                             Navigator.push(
                               context,
@@ -263,10 +272,10 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: buildTicketCard(
-                          'Reported Tickets',
+                          'Reported ',
                           reportedCount,
                           Colors.grey,
-                          Icons.check_circle_outline,
+                          Icons.report_problem,
                           () {
                             Navigator.push(
                               context,
@@ -291,7 +300,7 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
       VoidCallback onPressed) {
     return Container(
       height: 120,
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 6),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -304,25 +313,34 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
               ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 30,
+                Container(
+                  width: 30,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 26,
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: 25), // Space to align text properly
-                      Text(
-                        title,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      for (String word in title.split(" "))
+                        Text(
+                          word,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14, // Définir la taille de la police ici
+                            fontWeight: FontWeight
+                                .bold, // Optionnel, pour mettre en gras
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -334,14 +352,14 @@ class _FieldTicketScreenState extends State<FieldTicketScreen> {
               top: -15,
               left: 10,
               child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   '$count',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 class TicketDetailScreen extends StatelessWidget {
   final Map<String, dynamic> ticket;
 
-  TicketDetailScreen({required this.ticket});
+  const TicketDetailScreen({super.key, required this.ticket, required ticketId});
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +78,7 @@ class TicketDetailScreen extends StatelessWidget {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Container(
-                  padding: pw.EdgeInsets.all(10),
+                  padding: const pw.EdgeInsets.all(10),
                   decoration: pw.BoxDecoration(
                     border: pw.Border.all(color: PdfColors.red, width: 2),
                   ),
@@ -100,7 +100,7 @@ class TicketDetailScreen extends StatelessWidget {
                         ],
                       ),
                       pw.Container(
-                        padding: pw.EdgeInsets.all(10),
+                        padding: const pw.EdgeInsets.all(10),
                         decoration: pw.BoxDecoration(
                           border: pw.Border.all(color: PdfColors.red, width: 8),
                         ),
@@ -113,14 +113,14 @@ class TicketDetailScreen extends StatelessWidget {
                       pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('Date :', style: pw.TextStyle(fontSize: 12)),
+                          pw.Text('Date :', style: const pw.TextStyle(fontSize: 12)),
                           pw.Text(formatDate(ticket['completion_time']),
-                              style: pw.TextStyle(fontSize: 15)),
+                              style: const pw.TextStyle(fontSize: 15)),
                           pw.SizedBox(height: 10),
                           pw.Text('Numéro :',
-                              style: pw.TextStyle(fontSize: 12)),
+                              style: const pw.TextStyle(fontSize: 12)),
                           pw.Text(ticket['reference'] ?? "",
-                              style: pw.TextStyle(fontSize: 20)),
+                              style: const pw.TextStyle(fontSize: 20)),
                         ],
                       ),
                     ],
@@ -128,16 +128,16 @@ class TicketDetailScreen extends StatelessWidget {
                 ),
                 pw.SizedBox(height: 20),
                 pw.Container(
-                  padding: pw.EdgeInsets.all(10),
+                  padding: const pw.EdgeInsets.all(10),
                   decoration: pw.BoxDecoration(
                     border: pw.Border.all(color: PdfColors.red, width: 2),
                   ),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('Client', style: pw.TextStyle(fontSize: 20)),
+                      pw.Text('Client', style: const pw.TextStyle(fontSize: 20)),
                       pw.Text(ticket['client']?['client'] ?? "",
-                          style: pw.TextStyle(fontSize: 18)),
+                          style: const pw.TextStyle(fontSize: 18)),
                     ],
                   ),
                 ),
@@ -146,7 +146,7 @@ class TicketDetailScreen extends StatelessWidget {
                   children: [
                     pw.Expanded(
                       child: pw.Container(
-                        padding: pw.EdgeInsets.all(10),
+                        padding: const pw.EdgeInsets.all(10),
                         decoration: pw.BoxDecoration(
                           border: pw.Border.all(color: PdfColors.red, width: 2),
                         ),
@@ -154,12 +154,12 @@ class TicketDetailScreen extends StatelessWidget {
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
                             pw.Text('Localisation',
-                                style: pw.TextStyle(fontSize: 20)),
+                                style: const pw.TextStyle(fontSize: 20)),
                             pw.Text(
                                 ticket['service_station'] != null
                                     ? '${ticket['service_station'] ?? ''}'
                                     : '',
-                                style: pw.TextStyle(fontSize: 18)),
+                                style: const pw.TextStyle(fontSize: 18)),
                           ],
                         ),
                       ),
@@ -167,7 +167,7 @@ class TicketDetailScreen extends StatelessWidget {
                     pw.SizedBox(width: 10),
                     pw.Expanded(
                       child: pw.Container(
-                        padding: pw.EdgeInsets.all(10),
+                        padding: const pw.EdgeInsets.all(10),
                         decoration: pw.BoxDecoration(
                           border: pw.Border.all(color: PdfColors.red, width: 2),
                         ),
@@ -175,10 +175,10 @@ class TicketDetailScreen extends StatelessWidget {
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
                             pw.Text('Num série',
-                                style: pw.TextStyle(fontSize: 20)),
+                                style: const pw.TextStyle(fontSize: 20)),
                             pw.Text(
                                 ticket['equipement']?['equipement_sn'] ?? "",
-                                style: pw.TextStyle(fontSize: 18)),
+                                style: const pw.TextStyle(fontSize: 18)),
                           ],
                         ),
                       ),
@@ -187,7 +187,7 @@ class TicketDetailScreen extends StatelessWidget {
                 ),
                 pw.SizedBox(height: 10),
                 pw.Container(
-                  padding: pw.EdgeInsets.all(10),
+                  padding: const pw.EdgeInsets.all(10),
                   decoration: pw.BoxDecoration(
                     border: pw.Border.all(color: PdfColors.red, width: 2),
                   ),
@@ -195,22 +195,22 @@ class TicketDetailScreen extends StatelessWidget {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('Nature panne',
-                          style: pw.TextStyle(fontSize: 20)),
+                          style: const pw.TextStyle(fontSize: 20)),
                       pw.Text(ticket['service_type'] ?? "",
-                          style: pw.TextStyle(fontSize: 18)),
+                          style: const pw.TextStyle(fontSize: 18)),
                     ],
                   ),
                 ),
                 pw.SizedBox(height: 10),
                 pw.Container(
-                  padding: pw.EdgeInsets.all(10),
+                  padding: const pw.EdgeInsets.all(10),
                   decoration: pw.BoxDecoration(
                     border: pw.Border.all(color: PdfColors.red, width: 2),
                   ),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('Heure', style: pw.TextStyle(fontSize: 20)),
+                      pw.Text('Heure', style: const pw.TextStyle(fontSize: 20)),
                       pw.SizedBox(height: 10),
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -219,18 +219,18 @@ class TicketDetailScreen extends StatelessWidget {
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
                               pw.Text('D\'arrivé',
-                                  style: pw.TextStyle(fontSize: 18)),
+                                  style: const pw.TextStyle(fontSize: 18)),
                               pw.Text(formatDate(ticket['accepting_date']),
-                                  style: pw.TextStyle(fontSize: 18)),
+                                  style: const pw.TextStyle(fontSize: 18)),
                             ],
                           ),
                           pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
                               pw.Text('De cloturage',
-                                  style: pw.TextStyle(fontSize: 18)),
+                                  style: const pw.TextStyle(fontSize: 18)),
                               pw.Text(formatDate(ticket['solving_time']),
-                                  style: pw.TextStyle(fontSize: 18)),
+                                  style: const pw.TextStyle(fontSize: 18)),
                             ],
                           ),
                         ],
@@ -240,7 +240,7 @@ class TicketDetailScreen extends StatelessWidget {
                 ),
                 pw.SizedBox(height: 10),
                 pw.Container(
-                  padding: pw.EdgeInsets.all(10),
+                  padding: const pw.EdgeInsets.all(10),
                   decoration: pw.BoxDecoration(
                     border: pw.Border.all(color: PdfColors.red, width: 2),
                   ),
@@ -248,22 +248,22 @@ class TicketDetailScreen extends StatelessWidget {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('Action envisagé',
-                          style: pw.TextStyle(fontSize: 20)),
+                          style: const pw.TextStyle(fontSize: 20)),
                       pw.Text(ticket['solution'] ?? "",
-                          style: pw.TextStyle(fontSize: 18)),
+                          style: const pw.TextStyle(fontSize: 18)),
                     ],
                   ),
                 ),
                 pw.SizedBox(height: 10),
                 pw.Container(
-                  padding: pw.EdgeInsets.all(10),
+                  padding: const pw.EdgeInsets.all(10),
                   decoration: pw.BoxDecoration(
                     border: pw.Border.all(color: PdfColors.red, width: 2),
                   ),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('Visa', style: pw.TextStyle(fontSize: 20)),
+                      pw.Text('Visa', style: const pw.TextStyle(fontSize: 20)),
                       pw.SizedBox(height: 10),
                       pw.Row(
                         children: [
@@ -307,11 +307,11 @@ class TicketDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Ticket Details',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
       ),
       body: Padding(
@@ -321,9 +321,9 @@ class TicketDetailScreen extends StatelessWidget {
           children: [
             Text(
               'Ticket Number: ${ticket['reference'] ?? "Non rempli"}',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text('Status: ${ticket['status'] ?? "Non rempli"}'),
             Text(
                 'Service Station: ${ticket['service_station'] ?? "Non rempli"}'),
@@ -341,11 +341,11 @@ class TicketDetailScreen extends StatelessWidget {
             Text('Starting time: ${formatDate(ticket['starting_time'])}'),
             Text('Solving time: ${formatDate(ticket['solving_time'])}'),
             Text('Completion time: ${formatDate(ticket['completion_time'])}'),
-            SizedBox(height: 16), // Add some spacing below the last text
+            const SizedBox(height: 16), // Add some spacing below the last text
             if (isApproved) // Conditionally display the button if status is 'approved'
               ElevatedButton(
                 onPressed: downloadPdf,
-                child: Text('Download Fiche Intervention'),
+                child: const Text('Download Fiche Intervention'),
               ),
           ],
         ),

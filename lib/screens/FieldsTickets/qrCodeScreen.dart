@@ -1,78 +1,77 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:todo/screens/config/config_service.dart';
+// import 'package:flutter/material.dart';
+// import 'package:barcode_scan2/barcode_scan2.dart';
 
-class QrScannerScreen extends StatefulWidget {
-  @override
-  _QrScannerScreenState createState() => _QrScannerScreenState();
-}
+// void main() {
+//   runApp(MyApp());
+// }
 
-class _QrScannerScreenState extends State<QrScannerScreen> {
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
-  Barcode? result;
-  Timer? _timer;
-  bool _isCameraInitialized = false;
-  var address = ConfigService().adresse;
-  var port = ConfigService().port;
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Scan QR Code'),
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: (result != null)
-                  ? Text('Scanned Code: ${result!.code}',
-                      style: TextStyle(fontSize: 20))
-                  : Text('Scan a code', style: TextStyle(fontSize: 20)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Barcode Scanner',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       home: BarcodeScannerScreen(),
+//     );
+//   }
+// }
 
-  void _onQRViewCreated(QRViewController controller) {
-    if (_isCameraInitialized) {
-      return;
-    }
+// class BarcodeScannerScreen extends StatefulWidget {
+//   @override
+//   _BarcodeScannerScreenState createState() => _BarcodeScannerScreenState();
+// }
 
-    this.controller = controller;
-    _isCameraInitialized = true;
+// class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
+//   String scannedCode = '';
 
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        result = scanData;
-      });
+//   @override
+//   void initState() {
+//     super.initState();
+//     startScanning();
+//   }
 
-      print('Scanned QR Code: ${result!.code}'); // Impression de débogage
-      _timer?.cancel(); // Annuler tout timer existant
-      _timer = Timer(Duration(seconds: 1), () {
-        controller.dispose(); // Dispose de la caméra
-        Navigator.pop(context, result!.code); // Renvoie le code scanné
-      });
-    });
-  }
+//   Future<void> startScanning() async {
+//     print('Scan started');
+//     try {
+//       var scanResult = await BarcodeScanner.scan();
 
-  @override
-  void dispose() {
-    _timer?.cancel(); // Annuler le timer s'il est toujours en cours
-    if (controller != null) {
-      controller!.dispose(); // Dispose de la caméra
-    }
-    super.dispose();
-  }
-}
+//       if (scanResult.rawContent.isNotEmpty) {
+//         setState(() {
+//           scannedCode = scanResult.rawContent; // Stocker le code scanné
+//         });
+//         print('Scanned Code: $scannedCode');
+
+//         // Afficher le code scanné pendant 3 secondes avant de revenir à la page précédente
+//         await Future.delayed(Duration(seconds: 3));
+//         Navigator.pop(context, scannedCode); // Retourner avec le code scanné
+//       } else {
+//         print('Failed to scan, no result');
+//       }
+//     } catch (e) {
+//       print('Failed to scan, error: $e');
+//     }
+//   }
+
+//   @override
+//   void dispose() {
+//     // Libérer les ressources si nécessaire
+//     super.dispose(); // Appeler la méthode de la classe parente
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Barcode Scanner'),
+//       ),
+//       body: Center(
+//         child: Text(
+//           scannedCode.isEmpty ? 'Scanning...' : 'Scanned Code: $scannedCode',
+//           style: TextStyle(fontSize: 18),
+//         ),
+//       ),
+//     );
+//   }
+// }

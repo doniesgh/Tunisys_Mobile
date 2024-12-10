@@ -8,8 +8,7 @@ class PhoneDepartureScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const PhoneDepartureScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const PhoneDepartureScreen({super.key, required this.token, this.email});
 
   @override
   _PhoneDepartureScreenState createState() => _PhoneDepartureScreenState();
@@ -65,23 +64,23 @@ class _PhoneDepartureScreenState extends State<PhoneDepartureScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Departure',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No assigned tickets found.',
                     style: TextStyle(fontSize: 20),
@@ -96,8 +95,8 @@ class _PhoneDepartureScreenState extends State<PhoneDepartureScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TicketDetailScreen(
-                                ticketId: tickets[index]['_id']),
+                            builder: (context) => TicketDetailScreenTech(
+                                ticketId: tickets[index]['_id'], ticket: null,),
                           ),
                         );
                       },

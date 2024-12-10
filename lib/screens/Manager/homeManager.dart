@@ -2,14 +2,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/screens/Manager/alerteManager.dart';
 import 'package:todo/screens/Manager/historiqueManager.dart';
+import 'package:todo/screens/auth/login_screen.dart';
 import 'package:todo/screens/pages/historique.dart';
 import 'package:todo/screens/pages/main_home.dart';
 import 'package:todo/screens/pages/notification.dart';
 import 'package:todo/screens/pages/profile.dart';
-
-
-
-
 
 class HomeManager extends StatefulWidget {
   final String token;
@@ -49,7 +46,9 @@ class _HomeManagerScreenState extends State<HomeManager> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => NotificationScreen(),
+            builder: (context) => const NotificationScreen(
+              token: '',
+            ),
           ),
         );
         break;
@@ -68,25 +67,37 @@ class _HomeManagerScreenState extends State<HomeManager> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home Manager',
             style: TextStyle(color: Colors.white, fontSize: 24)),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
       ),
       drawer: Drawer(
-          child: ListView(
-        children: [],
-      )),
+        child: ListView(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.logout,
+                  color: Color.fromRGBO(209, 77, 90, 1)),
+              title: const Text('Logout'),
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs
+                    .remove('token'); // Supprimer le token pour déconnecter
 
-      
-
-
+                // Redirection vers la page de connexion après déconnexion
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: Column(
         children: [
           const SizedBox(height: 140),
@@ -105,13 +116,13 @@ class _HomeManagerScreenState extends State<HomeManager> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 255, 118, 118),
-                  minimumSize: Size(140, 120),
+                  backgroundColor: const Color.fromARGB(255, 255, 118, 118),
+                  minimumSize: const Size(140, 120),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.history, color: Colors.white, size: 40),
@@ -134,19 +145,21 @@ class _HomeManagerScreenState extends State<HomeManager> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          AlerteManagerScreen(token: widget.token),
+                      builder: (context) => AlerteManagerScreen(
+                        token: widget.token,
+                        userRole: '',
+                      ),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 255, 118, 118),
-                  minimumSize: Size(140, 120),
+                  backgroundColor: const Color.fromARGB(255, 255, 118, 118),
+                  minimumSize: const Size(140, 120),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.warning, color: Colors.white, size: 40),
@@ -171,13 +184,13 @@ class _HomeManagerScreenState extends State<HomeManager> {
                       ));
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 255, 118, 118),
-                  minimumSize: Size(140, 120),
+                  backgroundColor: const Color.fromARGB(255, 255, 118, 118),
+                  minimumSize: const Size(140, 120),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.person, color: Colors.white, size: 40),
@@ -205,11 +218,11 @@ class _HomeManagerScreenState extends State<HomeManager> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color.fromARGB(255, 255, 70, 104),
+        selectedItemColor: const Color.fromARGB(255, 255, 70, 104),
         unselectedItemColor: Colors.black,
         showUnselectedLabels: true,
-        unselectedLabelStyle: TextStyle(color: Colors.black),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        unselectedLabelStyle: const TextStyle(color: Colors.black),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         onTap: _onItemTapped,
       ),
     );

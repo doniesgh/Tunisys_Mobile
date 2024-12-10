@@ -5,22 +5,34 @@ import 'package:todo/screens/pages/equipementDetails.dart';
 import 'package:todo/screens/config/config_service.dart';
 
 class EquipementScreen extends StatefulWidget {
+  const EquipementScreen({super.key});
+
   @override
   _EquipementScreenState createState() => _EquipementScreenState();
 }
 
 class _EquipementScreenState extends State<EquipementScreen> {
+  final ConfigService configService = ConfigService();
   List<dynamic> equipements = [];
   bool isLoading = true;
   @override
   void initState() {
     super.initState();
+
+    _loadConfiguration();
     fetchEquipements();
   }
 
-  var address = ConfigService().adresse;
-  var port = ConfigService().port;
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig(); // Charge la configuration
+    setState(() {
+      // Met à jour l'interface si nécessaire
+    });
+  }
+
   Future<void> fetchEquipements() async {
+    var address = ConfigService().adresse;
+    var port = ConfigService().port;
     try {
       final response =
           await http.get(Uri.parse('$address:$port/api/equi/list'));
@@ -49,15 +61,15 @@ class _EquipementScreenState extends State<EquipementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Equipements',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        title: const Text('Equipements',
+            style: TextStyle(
+              color: Color.fromRGBO(209, 77, 90, 1),
+            )),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: ListView.builder(
@@ -79,43 +91,73 @@ class _EquipementScreenState extends State<EquipementScreen> {
                         print('Error: Equipment ID is null');
                       }
                     },
-                    child: Container(
+                    child: SizedBox(
                       width: 400,
-                      height: 180,
+                      height: 210,
                       child: Card(
-                        color: Color(0xFFF2D5D5),
-                        elevation: 4,
+                        color: const Color(
+                            0xFFF9F9F9), // Couleur de fond moderne et claire
+                        elevation:
+                            8, // Élévation plus élevée pour un effet d'ombre plus marqué
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(
+                              12), // Coins plus arrondis pour un effet moderne
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Stack(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Numero Serie: ${equipement['numero_serie'] ?? 'N/A'}',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+                              Icon(
+                                Icons
+                                    .devices, // Icône moderne pour représenter l'équipement
+                                size: 40,
+                                color: const Color.fromRGBO(209, 77, 90,
+                                    1), // Couleur de l'icône pour un contraste vif
+                              ),
+                              const SizedBox(
+                                  width:
+                                      16), // Espace entre l'icône et le texte
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Numéro de Série: ${equipement['numero_serie'] ?? 'N/A'}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(
+                                            0xFF333333), // Couleur du texte moderne
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Text(
-                                      'Client: ${equipement['client']['name'] ?? 'N/A'}'),
-                                  Text(
-                                      'Agence: ${equipement['agence']['agence'] ?? 'N/A'}'),
-                                  Text(
-                                      'Model: ${equipement['modele']['name'] ?? 'N/A'}'),
-                                  Text(
-                                    'Type: ${equipement['type'] ?? 'N/A'}',
-                                  ),
-                                  Text(
-                                    'Client: ${equipement['client']['name'] ?? 'N/A'}',
-                                  ),
-                                ],
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Type: ${equipement['type'] ?? 'N/A'}',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(
+                                            0xFF666666), // Couleur du texte pour une hiérarchie visuelle
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Marque: ${equipement['marque'] ?? 'N/A'}', // Correction du champ pour une information supplémentaire
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF666666),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Modèle: ${equipement['modele'] ?? 'N/A'}', // Correction du champ pour une information supplémentaire
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF666666),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

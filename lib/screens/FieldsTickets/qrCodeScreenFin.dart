@@ -1,74 +1,77 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 
-class QrScannerScreenFin extends StatefulWidget {
-  @override
-  _QrScannerScreenFinState createState() => _QrScannerScreenFinState();
+void main() {
+  runApp(MyApp());
 }
 
-class _QrScannerScreenFinState extends State<QrScannerScreenFin> {
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
-  Barcode? result;
-  Timer? _timer;
-  bool _isCameraInitialized = false;
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Barcode Scanner',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: BarcodeScannerScreen(),
+    );
+  }
+}
+
+class BarcodeScannerScreen extends StatefulWidget {
+  @override
+  _BarcodeScannerScreenState createState() => _BarcodeScannerScreenState();
+}
+
+class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
+  String scannedCode = '';
+
+  @override
+  void initState() {
+    super.initState();
+    startScanning();
+  }
+
+  Future<void> startScanning() async {
+    print('Scan started');
+    try {
+      var scanResult = await BarcodeScanner.scan();
+
+      if (scanResult.rawContent.isNotEmpty) {
+        setState(() {
+          scannedCode = scanResult.rawContent; // Stocker le code scanné
+        });
+        print('Scanned Code: $scannedCode');
+
+        // Afficher le code scanné pendant 3 secondes avant de revenir à la page précédente
+        await Future.delayed(Duration(seconds: 3));
+        Navigator.pop(context, scannedCode); // Retourner avec le code scanné
+      } else {
+        print('Failed to scan, no result');
+      }
+    } catch (e) {
+      print('Failed to scan, error: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    // Libérer les ressources si nécessaire
+    super.dispose(); // Appeler la méthode de la classe parente
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Scan QR Code'),
+        title: Text('Barcode Scanner'),
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: (result != null)
-                  ? Text('Scanned Code: ${result!.code}', style: TextStyle(fontSize: 20))
-                  : Text('Scan a code', style: TextStyle(fontSize: 20)),
-            ),
-          ),
-        ],
+      body: Center(
+        child: Text(
+          scannedCode.isEmpty ? 'Scanning...' : 'Scanned Code: $scannedCode',
+          style: TextStyle(fontSize: 18),
+        ),
       ),
     );
-  }
-
-  void _onQRViewCreated(QRViewController controller) {
-    if (_isCameraInitialized) {
-      return;
-    }
-
-    this.controller = controller;
-    _isCameraInitialized = true;
-
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        result = scanData;
-      });
-
-      _timer?.cancel();
-      _timer = Timer(Duration(seconds: 1), () {
-        controller.dispose();
-        Navigator.pop(context, result!.code);
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    if (controller != null) {
-      controller!.dispose();
-    }
-    super.dispose();
   }
 }

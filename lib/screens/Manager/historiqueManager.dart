@@ -6,7 +6,7 @@ import 'package:todo/screens/config/config_service.dart';
 
 class HistoriqueManagerScreen extends StatefulWidget {
   final String token;
-  HistoriqueManagerScreen({required this.token});
+  const HistoriqueManagerScreen({super.key, required this.token});
 
   @override
   _HistoriqueManagerScreenState createState() =>
@@ -61,19 +61,19 @@ class _HistoriqueManagerScreenState extends State<HistoriqueManagerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Manager Historique ',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 5.0),
         child: isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : historique.isEmpty
-                ? Center(child: Text('No historique found'))
+                ? const Center(child: Text('No historique found'))
                 : ListView.builder(
                     itemCount: historique.length,
                     itemBuilder: (context, index) {

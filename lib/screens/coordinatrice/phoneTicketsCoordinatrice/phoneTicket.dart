@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:todo/screens/coordinatrice/phoneTicketsCoordinatrice/phoneAssigned.dart';
-import 'package:todo/screens/coordinatrice/phoneTicketsCoordinatrice/phoneaccepted.dart';
-import 'package:todo/screens/coordinatrice/phoneTicketsCoordinatrice/phoneloading.dart';
-import 'package:todo/screens/coordinatrice/phoneTicketsCoordinatrice/phonesolved.dart';
+import 'package:todo/screens/tickets/phoneAssigned.dart';
+import 'package:todo/screens/tickets/phoneaccepted.dart';
+import 'package:todo/screens/tickets/phoneapprouved.dart';
+import 'package:todo/screens/tickets/phoneloading.dart';
+import 'package:todo/screens/tickets/phonereported.dart';
+import 'package:todo/screens/tickets/phonesolved.dart';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,9 +12,9 @@ import 'dart:convert';
 class PTicketScreen extends StatefulWidget {
   final String token;
   final String? email;
+  final String? id;
 
-  const PTicketScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const PTicketScreen({super.key, required this.token, this.email, this.id});
 
   @override
   _PTicketScreenScreenState createState() => _PTicketScreenScreenState();
@@ -26,15 +28,14 @@ class _PTicketScreenScreenState extends State<PTicketScreen> {
   int loadingCount = 0;
   int solvedCount = 0;
   int reportedCount = 0;
-
-  var address = ConfigService().adresse;
-  var port = ConfigService().port;
   @override
   void initState() {
     super.initState();
     fetchTicketCounts(); // Appel initial pour récupérer les compteurs
   }
 
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
   Future<void> fetchTicketCounts() async {
     setState(() {
       isLoading = true;
@@ -42,7 +43,7 @@ class _PTicketScreenScreenState extends State<PTicketScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/ticket/countphone}'),
+        Uri.parse('$address:$port/api/ticket/countphone/${widget.id}'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
@@ -79,20 +80,21 @@ class _PTicketScreenScreenState extends State<PTicketScreen> {
     await fetchTicketCounts();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Process Tickets',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : ListView(
                 children: [
                   const SizedBox(
@@ -183,6 +185,49 @@ class _PTicketScreenScreenState extends State<PTicketScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: buildTicketCard(
+                          'Reported Tickets',
+                          reportedCount,
+                          Colors.grey,
+                          Icons.report_problem,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PhoneReportedScreen(
+                                  token: widget.token,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: buildTicketCard(
+                          'Approuved Tickets',
+                          approuvedCount,
+                          const Color(0xFF80C4E9),
+                          Icons.check_circle,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PhoneApprouvedScreen(
+                                  token: widget.token,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
       ),
@@ -193,7 +238,7 @@ class _PTicketScreenScreenState extends State<PTicketScreen> {
       VoidCallback onPressed) {
     return Container(
       height: 120,
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -219,11 +264,12 @@ class _PTicketScreenScreenState extends State<PTicketScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(height: 25), // Space to align text properly
+                      const SizedBox(
+                          height: 25), // Space to align text properly
                       Text(
                         title,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ],
                   ),
@@ -236,14 +282,14 @@ class _PTicketScreenScreenState extends State<PTicketScreen> {
               top: -15,
               left: 10,
               child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   '$count',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

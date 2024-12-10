@@ -47,7 +47,9 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => NotificationScreen(),
+            builder: (context) => const NotificationScreen(
+              token: '',
+            ),
           ),
         );
         break;
@@ -63,7 +65,9 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PTicketScreen(token: widget.token),
+            builder: (context) => PTicketScreen(
+              token: widget.token,
+            ),
           ),
         );
         break;
@@ -85,14 +89,16 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Client Management',
-            style: TextStyle(color: Colors.white, fontSize: 24)),
-        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
+        title: const Text(
+          'Client Management',
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
+        ),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
       ),
       body: Column(
         children: [
-          const SizedBox(height: 160),
+          const SizedBox(height: 100),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -113,9 +119,9 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.people, color: Colors.white, size: 40),
                     SizedBox(height: 15),
                     Text(
@@ -143,9 +149,9 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.pages, color: Colors.white, size: 40),
                     SizedBox(height: 15),
                     Text(
@@ -167,7 +173,7 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          ListeFournisseurscreen(token: widget.token),
+                          ListeFournisseursScreen(token: widget.token),
                     ),
                   );
                 },
@@ -178,9 +184,9 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.room_service, color: Colors.white, size: 40),
                     SizedBox(height: 15),
                     Text(
@@ -208,10 +214,10 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.room_service, color: Colors.white, size: 40),
+                  children: [
+                    Icon(Icons.settings, color: Colors.white, size: 40),
                     SizedBox(height: 15),
                     Text(
                       'Equipements',
@@ -224,32 +230,50 @@ class _ClientmanagementScreenState extends State<Clientmanagement> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Field Tickets',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.phone),
-            label: 'Phone Tickets',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 255, 70, 104),
-        unselectedItemColor: Colors.black,
-        showUnselectedLabels: true,
-        unselectedLabelStyle: const TextStyle(color: Colors.black),
-        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
-        onTap: _onItemTapped,
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment
+              .spaceAround, // Espacement égal entre les boutons
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.notifications),
+              color: _selectedIndex == 0
+                  ? Color.fromRGBO(209, 77, 90, 1)
+                  : Colors.grey,
+              onPressed: () {
+                _onItemTapped(0);
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.phone),
+              color: _selectedIndex == 2
+                  ? Color.fromRGBO(209, 77, 90, 1)
+                  : Colors.grey,
+              onPressed: () {
+                _onItemTapped(2);
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.map),
+              color: _selectedIndex == 1
+                  ? Color.fromRGBO(209, 77, 90, 1)
+                  : Colors.grey,
+              onPressed: () {
+                _onItemTapped(1);
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.person),
+              color: _selectedIndex == 3
+                  ? Color.fromRGBO(209, 77, 90, 1)
+                  : Colors.grey,
+              onPressed: () {
+                _onItemTapped(3);
+              },
+            ),
+          ],
+        ),
+        color: Color.fromRGBO(231, 236, 250, 1), // Couleur de fond rouge
       ),
     );
   }

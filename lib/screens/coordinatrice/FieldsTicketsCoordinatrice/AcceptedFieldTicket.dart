@@ -8,8 +8,7 @@ class FieldAcceptedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const FieldAcceptedScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const FieldAcceptedScreen({super.key, required this.token, this.email});
 
   @override
   _FieldAcceptedScreenState createState() => _FieldAcceptedScreenState();
@@ -61,23 +60,23 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Accepted',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No assigned tickets found.',
                     style: TextStyle(fontSize: 20),
@@ -91,15 +90,15 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                     var technicienTransfer = ticket['technicien_transfer'];
 
                     return Card(
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
                       child: ListTile(
                         title: Text(tickets[index]['reference']),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => TicketDetailScreen(
-                                  ticketId: tickets[index]['_id']),
+                              builder: (context) => TicketDetailScreenTech(
+                                  ticketId: tickets[index]['_id'], ticket: null,),
                             ),
                           );
                         },

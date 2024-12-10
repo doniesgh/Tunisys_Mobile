@@ -3,56 +3,42 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:intl/intl.dart';
-import 'package:jiffy/jiffy.dart';
 
 class EquipmentDetailScreen extends StatefulWidget {
   final String equipmentId;
 
-  EquipmentDetailScreen({required this.equipmentId});
+  const EquipmentDetailScreen({super.key, required this.equipmentId});
 
   @override
   _EquipmentDetailScreenState createState() => _EquipmentDetailScreenState();
 }
 
 class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
+  final ConfigService configService = ConfigService();
   Map<String, dynamic>? equipment;
   bool isLoading = true;
   bool hasError = false;
   final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+  var address = ConfigService().adresse;
+  var port = ConfigService().port;
+
   @override
   void initState() {
     super.initState();
+    _loadConfiguration();
     fetchEquipmentDetails();
   }
 
-  var address = ConfigService().adresse;
-  var port = ConfigService().port;
-  /*String formatDate(dynamic date) {
-    // Vérifie si la date est nulle
-    if (date == null) return 'Non rempli';
-
-    // Si la date est une liste, on prend le premier élément si la liste n'est pas vide
-    if (date is List) {
-      date = date.isNotEmpty ? date[0] : null;
-    }
-
-    // Si la date est une chaîne de caractères, on essaie de la parser
-    if (date is String) {
-      try {
-        final parsedDate = DateTime.parse(date);
-        // Formate la date et la retourne
-        return Jiffy(parsedDate).yMMMMEEEEdjm;
-      } catch (e) {
-        // En cas d'erreur de parsing, retourne 'Non rempli'
-        return 'Non rempli';
-      }
-    }
-
-    // Retourne 'Non rempli' si la date n'est ni une chaîne de caractères ni une liste
-    return 'Non rempli';
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig(); // Charge la configuration
+    setState(() {
+      // Met à jour l'interface si nécessaire
+    });
   }
-*/
+
   Future<void> fetchEquipmentDetails() async {
+    var address = ConfigService().adresse;
+    var port = ConfigService().port;
     try {
       final response = await http
           .get(Uri.parse('$address:$port/api/equi/${widget.equipmentId}'));
@@ -74,123 +60,183 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
     }
   }
 
+  String formatDate(dynamic date) {
+    if (date == null) return 'Non rempli';
+
+    if (date is List) {
+      date = date.isNotEmpty ? date[0] : null;
+    }
+
+    if (date is String) {
+      try {
+        final parsedDate = DateTime.parse(date);
+        final day = parsedDate.day.toString().padLeft(2, '0');
+        final month = parsedDate.month.toString().padLeft(2, '0');
+        final year = parsedDate.year.toString();
+
+        // Exemple de format: 01 Janvier 2024
+        final formattedDate = '$day ${getMonthName(parsedDate.month)} $year';
+        return formattedDate;
+      } catch (e) {
+        return 'Non rempli';
+      }
+    }
+
+    return 'Non rempli';
+  }
+
+  String getMonthName(int month) {
+    const months = [
+      'Janvier',
+      'Février',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Août',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Décembre'
+    ];
+    return months[month - 1];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Equipment Details',
-            style: TextStyle(color: Colors.black, fontSize: 24),
-          ),
-          backgroundColor: Color(0xFFF2D5D5),
-        ),
-        body: Container(
-          child: isLoading
-              ? Center(child: CircularProgressIndicator())
-              : hasError
-                  ? Center(child: Text('Error fetching equipment details'))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Numéro Série: ${equipment!['numero_serie']}',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                              'Client: ${equipment!['client']['name'] ?? 'Non rempli'}'),
-                          Text(
-                              'Agence: ${equipment!['agence']['agence'] ?? 'Non rempli'}'),
-                          Text(
-                              'Modele: ${equipment!['modele']['name'] ?? 'Non rempli'}'),
-                          Text(
-                              'Modéle écran: ${equipment!['modele']['modele_ecran'] ?? 'Non rempli'}'),
-                          Text('Type: ${equipment!['type'] ?? 'Non rempli'}'),
-                          /* Text(
-                              'Date mise en service : ${formatDate(equipment!['date_mise_enservice'] ?? 'Non rempli')}'),
-                          Text(
-                              'Date installation physique : ${formatDate(equipment!['date_installation_physique'] ?? 'Non rempli')}'),
-                          Text(
-                              'Date Livraison : ${formatDate(equipment!['date_livraison'] ?? 'Non rempli')}'),
-                          */
-                          Text(
-                            'Autre données',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red),
-                          ),
-                          Text(
-                              'Nombre K7: ${equipment!['nb_casette'] ?? 'Non rempli'}'),
-                          Text(
-                              'Nombre caméra: ${equipment!['nb_camera'] ?? 'Non rempli'}'),
-                          Text(
-                              'Type caméra: ${equipment!['type_camera'] ?? 'Non rempli'}'),
-                          Text(
-                              'Modéle pc: ${equipment!['modele_pc'] ?? 'Non rempli'}'),
-                          Text(
-                              'Version Application: ${equipment!['version_application'] ?? 'Non rempli'}'),
-                          Text(
-                              'Version OS: ${equipment!['version_os'] ?? 'Non rempli'}'),
-                          /*Text(
-                              'Début garantie : ${formatDate(equipment!['garantie_start_date'] ?? 'Non rempli')}'),
-                          Text(
-                              'Fin garantie : ${formatDate(equipment!['garantie_end_date'] ?? 'Non rempli')}'),
-                          Text(
-                              'Début maintenance: ${formatDate(equipment!['date_debut_maintenance'] ?? 'Non rempli')}'),
-                          Text(
-                              'Fin maintenance : ${formatDate(equipment!['date_end_maintenance'] ?? 'Non rempli')}'),
-                        */
-                          Text(
-                              'Geolocalisation : ${equipment!['geolocalisation'] ?? 'Non rempli'}'),
-                          Text(
-                              'Sous adressse: ${equipment!['sous_adresse'] ?? 'Non rempli'}'),
-                          Text(
-                              'Type Branche: ${equipment!['branch_type'] ?? 'Non rempli'}'),
-                          Text(
-                              'Code QR: ${equipment!['codeqrequipement'] ?? 'Non rempli'}'),
-                          SizedBox(height: 8),
-                          Text(
-                            'Paramétres réseau',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red),
-                          ),
-                          Text(
-                              'Code terminal: ${equipment!['code_terminal'] ?? 'Non rempli'}'),
-                          Text(
-                              'Adresse IP : ${equipment!['adresse_ip'] ?? 'Non rempli'}'),
-                          Text(
-                              'Masque de sous réseaux : ${equipment!['masque_sous_reseau'] ?? 'Non rempli'}'),
-                          Text(
-                              'Getway : ${equipment!['getway'] ?? 'Non rempli'}'),
-                          Text(
-                              'Adresse IP serveur monétique : ${equipment!['adresse_ip_serveur_monetique'] ?? 'Non rempli'}'),
-                          Text('Port : ${equipment!['port'] ?? 'Non rempli'}'),
-                          Text('TMK I : ${equipment!['tmk1'] ?? 'Non rempli'}'),
-                          Text(
-                              'TMK II : ${equipment!['tmk2'] ?? 'Non rempli'}'),
-                          Text(
-                            'Configuration des cassettes',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red),
-                          ),
-                          Text(
-                              'Type A: ${equipment!['config_k7_typeA'] ?? 'Non rempli'}'),
-                          Text(
-                              'Type B : ${equipment!['config_k7_typeB'] ?? 'Non rempli'}'),
-                          Text(
-                              'Type C : ${equipment!['config_k7_typeC'] ?? 'Non rempli'}'),
-                          Text(
-                              'Type D : ${equipment!['config_k7_typeD'] ?? 'Non rempli'}'),
-                        ],
-                      ),
+      appBar: AppBar(
+        title: const Text('Détails equipement',
+            style: TextStyle(
+              color: Color.fromRGBO(209, 77, 90, 1),
+            )),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : hasError
+                ? const Center(
+                    child: Text(
+                      'Erreur lors de la récupération des détails de l\'équipement',
+                      style: TextStyle(fontSize: 16, color: Colors.red),
                     ),
-        ));
+                  )
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle('Informations de Base', Icons.info),
+                        _buildInfoRow(
+                            'Numéro de Série', equipment!['numero_serie']),
+                        _buildInfoRow('Modèle Écran',
+                            equipment!['modele']['modele_ecran']),
+                        _buildInfoRow('Type', equipment!['type']),
+                        const SizedBox(height: 20),
+                        _buildSectionTitle(
+                            'Paramètres Réseau', Icons.network_check),
+                        _buildInfoRow(
+                            'Code Terminal', equipment!['code_terminal']),
+                        _buildInfoRow('Adresse IP', equipment!['adresse_ip']),
+                        _buildInfoRow('Masque de Sous Réseaux',
+                            equipment!['masque_sous_reseau']),
+                        _buildInfoRow('Gateway', equipment!['getway']),
+                        _buildInfoRow('Adresse IP Serveur Monétique',
+                            equipment!['adresse_ip_serveur_monetique']),
+                        _buildInfoRow('Port', equipment!['port']),
+                        _buildInfoRow('TMK I', equipment!['tmk1']),
+                        _buildInfoRow('TMK II', equipment!['tmk2']),
+                        const SizedBox(height: 20),
+                        _buildSectionTitle(
+                            'Configuration des Cassettes', Icons.settings),
+                        _buildInfoRow('Type A', equipment!['config_k7_typeA']),
+                        _buildInfoRow('Type B', equipment!['config_k7_typeB']),
+                        _buildInfoRow('Type C', equipment!['config_k7_typeC']),
+                        _buildInfoRow('Type D', equipment!['config_k7_typeD']),
+                        _buildSectionTitle('Autres Données', Icons.data_usage),
+                        _buildInfoRow('Nombre K7', equipment!['nb_casette']),
+                        _buildInfoRow('Nombre Caméra', equipment!['nb_camera']),
+                        _buildInfoRow('Type Caméra', equipment!['type_camera']),
+                        _buildInfoRow('Modèle PC', equipment!['modele_pc']),
+                        _buildInfoRow('Version Application',
+                            equipment!['version_application']),
+                        _buildInfoRow('Version OS', equipment!['version_os']),
+                        _buildInfoRow(
+                            'Géolocalisation', equipment!['geolocalisation']),
+                        _buildInfoRow(
+                            'Sous Adresse', equipment!['sous_adresse']),
+                        _buildInfoRow(
+                            'Type Branche', equipment!['branch_type']),
+                        _buildInfoRow(
+                            'Code QR', equipment!['codeqrequipement']),
+                        // const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 24, color: Colors.red),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, dynamic value) {
+    String displayValue;
+    if (value is int) {
+      displayValue = value.toString();
+    } else if (value is String) {
+      displayValue = value;
+    } else {
+      displayValue = 'Non rempli';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              '$label: ',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Color.fromARGB(255, 56, 56, 56),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              displayValue,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -5,34 +5,86 @@ import 'package:todo/screens/FieldsTickets/ReportedFieldTicket.dart';
 import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
+import 'package:intl/intl.dart';
 
 class FieldAcceptedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const FieldAcceptedScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const FieldAcceptedScreen({super.key, required this.token, this.email});
 
   @override
   _FieldAcceptedScreenState createState() => _FieldAcceptedScreenState();
 }
 
 class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
+  final ConfigService configService = ConfigService();
   bool isLoading = false;
   List<dynamic> tickets = [];
 
   @override
   void initState() {
     super.initState();
+    _loadConfiguration();
     fetchAssignedTickets();
+  }
+
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig(); // Charge la configuration
+    setState(() {
+      // Met à jour l'interface si nécessaire
+    });
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
+  // Future<void> fetchAssignedTickets() async {
+  //   var address = ConfigService().adresse;
+  //   var port = ConfigService().port;
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //   try {
+  //     final response = await http.get(
+  //       Uri.parse('$address:$port/api/ticketht/assigned/field'),
+  //       headers: {
+  //         'Authorization': 'Bearer ${widget.token}',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final responseData = json.decode(response.body);
+  //       if (responseData != null) {
+  //         setState(() {
+  //           tickets = responseData
+  //               .where((ticket) => ticket['status'] == 'ACCEPTED')
+  //               .toList();
+  //           isLoading = false;
+  //         });
+  //       } else {
+  //         throw Exception('Response data is null');
+  //       }
+  //     } else {
+  //       throw Exception('Failed to load tickets: ${response.statusCode}');
+  //     }
+  //   } catch (error) {
+  //     print('Error fetching ticket: $error');
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
+
+  /*
   Future<void> fetchAssignedTickets() async {
+    var address = ConfigService().adresse;
+    var port = ConfigService().port;
     setState(() {
       isLoading = true;
     });
+
+    // Démarrer le chronomètre pour mesurer la durée de la requête
+    final stopwatch = Stopwatch()..start();
+
     try {
       final response = await http.get(
         Uri.parse('$address:$port/api/ticketht/assigned/field'),
@@ -40,6 +92,34 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
           'Authorization': 'Bearer ${widget.token}',
         },
       );
+
+      // Arrêter le chronomètre après la réponse
+      stopwatch.stop();
+      final duration = stopwatch.elapsed;
+
+      // Vérifier si la réponse a pris plus de 3 secondes
+      if (duration.inMilliseconds > 5000) {
+        // Si la réponse a pris trop de temps
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Lenteur détectée'),
+              content: Text(
+                  'La réponse du serveur prend plus de temps que prévu (${duration.inSeconds} secondes). Veuillez patienter.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData != null) {
@@ -50,230 +130,122 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
             isLoading = false;
           });
         } else {
-          throw Exception('Response data is null');
+          // Si les données sont nulles ou invalides
+          throw Exception('Les données de la réponse sont nulles');
         }
       } else {
-        throw Exception('Failed to load tickets: ${response.statusCode}');
+        // En cas d'erreur de statut HTTP
+        throw Exception(
+            'Échec du chargement des tickets: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching alerts: $error');
+      print('Erreur lors de la récupération des tickets: $error');
       setState(() {
         isLoading = false;
       });
-    }
-  }
 
-  Future<void> handleReportTicket(String ticketId) async {
-    String reporting_note_assigned =
-        ''; // Variable pour stocker la raison du report
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Reporting Ticket ?'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text('Pourquoi voulez-vous reporter le ticket ?'),
-              TextField(
-                onChanged: (value) {
-                  reporting_note_assigned =
-                      value; // Met à jour la raison du report à chaque changement
-                },
-                decoration: InputDecoration(
-                  hintText: 'Raison du report',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // Annule l'action de report
-              },
-              child: Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (reporting_note_assigned.trim().isEmpty) {
-                  // Affiche un message d'erreur si le champ est vide
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Attention'),
-                        content:
-                            Text('Le champ de raison du report est requis.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                  return; // Arrête l'exécution si le champ est vide
-                }
-                Navigator.of(context).pop(true); // Confirme l'action de report
-                try {
-                  final response = await http.put(
-                    Uri.parse(
-                        '$address:$port/api/ticket/ReportingAssigned/$ticketId'),
-                    headers: {'Content-Type': 'application/json'},
-                    body: json.encode({
-                      'status': 'REPORTED',
-                      'reporting_note_assigned': reporting_note_assigned,
-                      'reporting_assignedTicket_time':
-                          DateTime.now().toIso8601String(),
-                    }),
-                  );
-
-                  if (response.statusCode == 200) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('Reporté avec succès!'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => FieldEnRouteScreen(
-                                      token: widget.token,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Text('OK'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  } else {
-                    throw Exception('Échec du report du ticket');
-                  }
-                } catch (error) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text("Erreur lors du report"),
-                        content: Text("Veuillez réessayer plus tard"),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
-              },
-              child: Text('Reporter'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> handleAcceptTicket(String ticketId) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Êtes-vous sûr  de partir ?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text('Oui, je vais partir'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result == true) {
-      try {
-        final response = await http.put(
-          Uri.parse('$address:$port/api/ticket/depart/$ticketId'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'status': 'LEFT',
-            'departure_time': DateTime.now().toIso8601String(),
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Partis avec succès!'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FieldEnRouteScreen(
-                            token: widget.token,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        } else {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Erreur ticket"),
-                content: Text("Veuillez réessayer plus tard"),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      } catch (error) {
+      // Afficher un message spécifique si une erreur est survenue mais que la réponse est bien arrivée
+      if (stopwatch.isRunning) {
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("Erreur "),
-              content: Text("Veuillez réessayer plus tard"),
+              title: Text('Erreur d\'affichage'),
+              content: Text(
+                  'La réponse du serveur a été reçue, mais elle est trop longue à traiter. Veuillez réessayer plus tard.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  } 
+*/
+
+  Future<void> fetchAssignedTickets() async {
+    var address = ConfigService().adresse;
+    var port = ConfigService().port;
+    setState(() {
+      isLoading = true;
+    });
+
+    // Démarrer le chronomètre pour mesurer la durée de la requête
+    final stopwatch = Stopwatch()..start();
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+            '$address:$port/api/ticketht/assigned/field/mobile?status=ACCEPTED'), // 'ASSIGNED' doit être entre guillemets
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      // Arrêter le chronomètre après la réponse
+      stopwatch.stop();
+      final duration = stopwatch.elapsed;
+
+      // Vérifier si la réponse a pris plus de 5 secondes
+      if (duration.inMilliseconds > 5000) {
+        // Si la réponse a pris trop de temps
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Lenteur détectée'),
+              content: Text(
+                  'La réponse du serveur prend plus de temps que prévu (${duration.inSeconds} secondes). Veuillez patienter.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData != null) {
+          setState(() {
+            tickets = responseData; // Pas de filtrage ici
+            isLoading = false;
+          });
+        } else {
+          // Si les données sont nulles ou invalides
+          throw Exception('Les données de la réponse sont nulles');
+        }
+      } else {
+        // En cas d'erreur de statut HTTP
+        throw Exception(
+            'Échec du chargement des tickets: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Erreur lors de la récupération des tickets: $error');
+      setState(() {
+        isLoading = false;
+      });
+
+      // Afficher un message spécifique si une erreur est survenue
+      if (stopwatch.isRunning) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Erreur d\'affichage'),
+              content: Text(
+                  'La réponse du serveur a été reçue, mais elle est trop longue à traiter. Veuillez réessayer plus tard.'),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -289,29 +261,219 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
     }
   }
 
+  Future<void> handleReportTicket(String ticketId) async {
+    String reportingNoteAssigned =
+        ''; // Variable pour stocker la raison du report
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Reporting Ticket ?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Text('Pourquoi voulez-vous reporter le ticket ?'),
+              TextField(
+                onChanged: (value) {
+                  reportingNoteAssigned =
+                      value; // Met à jour la raison du report à chaque changement
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Raison du report',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Annule l'action de report
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (reportingNoteAssigned.trim().isEmpty) {
+                  // Affiche un message d'erreur si le champ est vide
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Attention'),
+                        content: const Text(
+                            'Le champ de raison du report est requis.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  return; // Arrête l'exécution si le champ est vide
+                }
+                Navigator.of(context).pop(true); // Confirme l'action de report
+                try {
+                  final response = await http.put(
+                    Uri.parse(
+                        '$address:$port/api/ticket/ReportingField/$ticketId'),
+                    headers: {'Content-Type': 'application/json'},
+                    body: json.encode({
+                      'status': 'REPORTED',
+                      'reporting_note_assigned': reportingNoteAssigned,
+                      'reporting_assignedTicket_time':
+                          DateTime.now().toIso8601String(),
+                    }),
+                  );
+
+                  if (response.statusCode == 200) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Reporté avec succès!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FieldReportedScreen(
+                                      token: widget.token,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    throw Exception('Échec du report du ticket');
+                  }
+                } catch (error) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Erreur lors du report"),
+                        content: const Text("Veuillez réessayer plus tard"),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: const Text('Reporter'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> handleAcceptTicket(String ticketId) async {
+    try {
+      // Envoi de la requête POST
+      final response = await http.post(
+        Uri.parse('$address:$port/api/ticket/depart/$ticketId'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'status': 'GOING',
+          'departure_time': DateTime.now().toIso8601String(),
+        }),
+      );
+
+      // Vérifie si la requête est réussie (status 200)
+      if (response.statusCode == 200) {
+        // Passage à l'écran suivant si la requête est un succès
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FieldEnRouteScreen(
+              token: widget.token,
+            ),
+          ),
+        );
+      } else {
+        // Affichage du modal d'erreur si la requête échoue
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Erreur ticket"),
+              content: const Text("Veuillez réessayer plus tard"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (error) {
+      // Gestion des erreurs (problèmes de réseau, etc.)
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Erreur"),
+            content: const Text("Veuillez réessayer plus tard"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Accepted',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+        title: const Text(
+          'Accepted Tickets',
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
-                    'No assigned tickets found.',
+                    'No accepted tickets found.',
                     style: TextStyle(fontSize: 20),
                   ),
                 )
@@ -319,101 +481,181 @@ class _FieldAcceptedScreenState extends State<FieldAcceptedScreen> {
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
+                      color: const Color.fromRGBO(231, 236, 250, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       child: Padding(
-                        padding: EdgeInsets.all(10), // Add padding to Card
+                        padding: const EdgeInsets.all(10),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Reference: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                            ListTile(
+                              title: Text(
+                                tickets[index]['reference'] ?? 'N/A',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  color: Color.fromRGBO(50, 50, 50, 1),
                                 ),
-                                Text(tickets[index]['reference']),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Status: ",
-                                ),
-                                Text(tickets[index]['status']),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Client: ",
-                                ),
-                                Text(tickets[index]['client']['name']),
-                              ],
-                            ),
-
-                            Row(
-                              children: [
-                                Text(
-                                  "Agence: ",
-                                ),
-                                Text(tickets[index]['agence']['agence']),
-                              ],
-                            ),
-
-                            SizedBox(
-                                height:
-                                    10), // Add spacing between text and buttons
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      handleAcceptTicket(tickets[index]['_id']);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 255, 248, 35),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Depart',
-                                      style: TextStyle(
-                                          color: const Color.fromARGB(
-                                              255, 42, 42, 42)),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildClientInfo(tickets[index]),
+                                  _buildDateAndNote(tickets[index]),
+                                ],
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TicketDetailScreenTech(
+                                      ticketId: tickets[index]['_id'],
+                                      ticket: null,
                                     ),
                                   ),
-                                ),
-                                SizedBox(
-                                    width: 10), // Add spacing between buttons
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      handleReportTicket(tickets[index]['_id']);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 97, 5, 184),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Report',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
+                            _buildActionButtons(tickets[index]),
                           ],
                         ),
                       ),
                     );
                   },
                 ),
+    );
+  }
+
+  Widget _buildClientInfo(Map<String, dynamic> ticket) {
+    print('Help desk : ${ticket['technicien_transfer']}');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildRow(
+          "Client: ",
+          ticket['client'] is Map && ticket['client']['name'] != null
+              ? ticket['client']['name']
+              : ticket['client'] ?? 'Non spécifié', // Valeur par défaut
+        ),
+        _buildRow(
+          "Agence: ",
+          ticket['agence'] is Map && ticket['agence']['agence'] != null
+              ? ticket['agence']['agence']
+              : ticket['agence'] ?? 'Non spécifié', // Valeur par défaut
+        ),
+        _buildRow(
+          "Help Desk: ",
+          ticket['technicien_transfer'] is Map
+              ? "${ticket['technicien_transfer']['firstname']} ${ticket['technicien_transfer']['lastname']}"
+              : 'Non spécifié',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateAndNote(Map<String, dynamic> ticket) {
+    print('Date de transfert: ${ticket['accepting_time']}');
+    return Column(
+      children: [
+        _buildRow("Note Coordinatrice: ", ticket['note'] ?? 'N/A'),
+        _buildRow("Date d'accept: ", formatDate(ticket['accepting_time'])),
+        //    _buildRow("Heure d'accept : ", formatTime(ticket['accepting_time'])),
+      ],
+    );
+  }
+
+  String formatDate(String isoDate) {
+    DateTime parsedDate = DateTime.parse(isoDate);
+    // Format date as 'dd/MM/yyyy HH:mm'
+    return DateFormat('HH:mm dd/MM/yyyy').format(parsedDate.toLocal());
+  }
+
+  String formatTime(String? dateString) {
+    if (dateString == null || dateString == 'N/A') {
+      return 'N/A'; // Si l'heure est absente ou invalide, renvoyer 'N/A'
+    }
+    try {
+      DateTime? parsedDate = DateTime.tryParse(dateString);
+      if (parsedDate == null) {
+        return 'N/A'; // Si parsing échoue, renvoyer 'N/A'
+      }
+      return DateFormat('HH:mm:ss')
+          .format(parsedDate); // Format des heures/minutes/secondes
+    } catch (e) {
+      return 'N/A'; // Si une erreur se produit pendant le parsing, renvoyer 'N/A'
+    }
+  }
+
+  Widget _buildRow(String label, String value) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: Color.fromRGBO(52, 52, 52, 1),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color.fromARGB(255, 102, 102, 102),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(Map<String, dynamic> ticket) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(width: 30),
+          ElevatedButton.icon(
+            onPressed: () {
+              handleReportTicket(ticket['_id']);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 122, 122, 122),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            ),
+            icon: const Icon(Icons.report, color: Colors.white),
+            label: const Text(
+              'Report',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 25),
+          ElevatedButton.icon(
+            onPressed: () {
+              handleAcceptTicket(ticket['_id']);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF61C0BF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            ),
+            icon: const Icon(Icons.directions_car, color: Colors.white),
+            label: const Text(
+              'Depart',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 10), // Spacing between buttons
+        ],
+      ),
     );
   }
 }

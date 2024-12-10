@@ -8,8 +8,12 @@ class ListeAgenceScreen extends StatefulWidget {
   final String clientId;
   final String clientName;
 
-  ListeAgenceScreen(
-      {required this.token, required this.clientId, required this.clientName});
+  const ListeAgenceScreen({
+    super.key,
+    required this.token,
+    required this.clientId,
+    required this.clientName,
+  });
 
   @override
   _ListeAgenceScreenState createState() => _ListeAgenceScreenState();
@@ -47,10 +51,10 @@ class _ListeAgenceScreenState extends State<ListeAgenceScreen> {
           throw Exception('Response data is null');
         }
       } else {
-        throw Exception('Failed to load alertes: ${response.statusCode}');
+        throw Exception('Failed to load agences: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching alerts: $error');
+      print('Error fetching agences: $error');
       setState(() {
         isLoading = false;
       });
@@ -63,21 +67,23 @@ class _ListeAgenceScreenState extends State<ListeAgenceScreen> {
       appBar: AppBar(
         title: Text(
           '${widget.clientName} Agences',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+          style: const TextStyle(
+              color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAgences,
+            color: Colors.white,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : agences.isEmpty
-              ? Center(child: Text('No agences found'))
+              ? const Center(child: Text('No agences found'))
               : RefreshIndicator(
                   onRefresh: fetchAgences,
                   child: ListView.builder(
@@ -85,35 +91,66 @@ class _ListeAgenceScreenState extends State<ListeAgenceScreen> {
                     itemBuilder: (context, index) {
                       final agence = agences[index];
                       return Card(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 15,
+                        ),
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        color: Colors.grey[200], // Light gray background
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 agence['agence'] ?? 'Non rempli',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromRGBO(209, 77, 90, 1),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_on,
+                                      color: Colors.grey),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Adresse: ${agence['adresse'] ?? 'Non rempli'}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(Icons.map, color: Colors.grey),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Localisation: ${agence['localisation'] ?? 'Non rempli'}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Contacts:',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                  'Adresse: ${agence['adresse'] ?? 'Non rempli'}'),
-                              Text(
-                                  'Localisation: ${agence['localisation'] ?? 'Non rempli'}'),
-                              SizedBox(height: 8),
-                              // Contacts list
-                              Text(
-                                'Contacts:',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromRGBO(209, 77, 90, 1),
                                 ),
                               ),
                               ListView.builder(
                                 shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
+                                physics: const NeverScrollableScrollPhysics(),
                                 itemCount: agence['contacts']?.length ?? 0,
                                 itemBuilder: (context, contactIndex) {
                                   final contact =
@@ -121,14 +158,29 @@ class _ListeAgenceScreenState extends State<ListeAgenceScreen> {
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 4.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    child: Row(
                                       children: [
-                                        Text(
-                                            'Name: ${contact['name'] ?? 'Non rempli'}'),
-                                        Text(
-                                            'Phone: ${contact['phone'] ?? 'Non rempli'}'),
+                                        const Icon(Icons.person,
+                                            color: Colors.grey),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Name: ${contact['name'] ?? 'Non rempli'}',
+                                                style: const TextStyle(
+                                                    fontSize: 16),
+                                              ),
+                                              Text(
+                                                'Phone: ${contact['phone'] ?? 'Non rempli'}',
+                                                style: const TextStyle(
+                                                    fontSize: 16),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   );

@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class ListeContratScreen extends StatefulWidget {
   final String token;
 
-  ListeContratScreen({required this.token});
+  const ListeContratScreen({super.key, required this.token});
 
   @override
   _ListeContratScreenScreenState createState() =>
@@ -59,23 +59,23 @@ class _ListeContratScreenScreenState extends State<ListeContratScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Contrats',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(209, 77, 90, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchContrats,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : contrats.isEmpty
-              ? Center(child: Text('No contracts found'))
+              ? const Center(child: Text('No contracts found'))
               : RefreshIndicator(
                   onRefresh: fetchContrats,
                   child: ListView.builder(
@@ -90,9 +90,9 @@ class _ListeContratScreenScreenState extends State<ListeContratScreen> {
                           ListTile(
                             tileColor: (() {
                               final terminationDate =
-                                  contrat['termination_date'] ?? null;
+                                  contrat['termination_date'];
                               final currentDate = DateTime.now();
-                              final halfYearInMonths = 6;
+                              const halfYearInMonths = 6;
                               final monthsDifference = terminationDate != null
                                   ? currentDate
                                       .difference(
@@ -114,7 +114,7 @@ class _ListeContratScreenScreenState extends State<ListeContratScreen> {
                             })(),
                             title: Text(
                               contrat['contrat_sn'] ?? 'N/A',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +130,7 @@ class _ListeContratScreenScreenState extends State<ListeContratScreen> {
                               ],
                             ),
                           ),
-                          SizedBox(height: 8), // Add space between contracts
+                          const SizedBox(height: 8), // Add space between contracts
                         ],
                       );
                     },

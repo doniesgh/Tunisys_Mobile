@@ -1,36 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
+import 'package:todo/utils/toast.dart';
 
 class FieldSolvedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const FieldSolvedScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const FieldSolvedScreen({super.key, required this.token, this.email});
 
   @override
   _FieldSolvedScreenState createState() => _FieldSolvedScreenState();
 }
 
 class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
+  final ConfigService configService = ConfigService();
   bool isLoading = false;
   List<dynamic> tickets = [];
 
   @override
   void initState() {
     super.initState();
+    _loadConfiguration();
     fetchAssignedTickets();
+  }
+
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig(); // Charge la configuration
+    setState(() {
+      // Met à jour l'interface si nécessaire
+    });
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
+
   Future<void> fetchAssignedTickets() async {
     setState(() {
       isLoading = true;
     });
+    var address = ConfigService().adresse;
+    var port = ConfigService().port;
+
+    // Log les valeurs de l'adresse et du port
+    print('Address: $address');
+    print('Port: $port');
+    if (address.isEmpty || port.isEmpty) {
+      Utils.showToast(
+          "Address or port is not set. Please check your configuration.");
+      setState(() {
+        isLoading = false; // Remet isLoading à false
+      });
+      return;
+    }
     try {
       final response = await http.get(
         Uri.parse('$address:$port/api/ticketht/assigned/field'),
@@ -43,7 +68,7 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
         if (responseData != null) {
           setState(() {
             tickets = responseData
-                .where((ticket) => ticket['status'] == 'SOLVED')
+                .where((ticket) => ticket['status'] == 'COMPLETED')
                 .toList();
             isLoading = false;
           });
@@ -63,28 +88,27 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('Received token in Solved Field Tickket: ${widget.token}');
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Solved',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+        title: const Text(
+          'Completed Tickets',
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
-                    'No solved tickets found.',
+                    'No completed tickets found.',
                     style: TextStyle(fontSize: 20),
                   ),
                 )
@@ -92,55 +116,58 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      margin: EdgeInsets.all(10),
-                      child: ListTile(
-                        title: Text(tickets[index]['reference']),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TicketDetailScreen(
-                                  ticketId: tickets[index]['_id']),
-                            ),
-                          );
-                        },
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      margin: const EdgeInsets.all(10),
+                      color: const Color.fromRGBO(231, 236, 250, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Status: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['status']),
-                              ],
+                            ListTile(
+                              title: Row(
+                                children: [
+                                  const Text(
+                                    "Ticket Number: ",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                      color: Color.fromRGBO(50, 50, 50, 1),
+                                    ),
+                                  ),
+                                  Text(
+                                    tickets[index]['reference'] ?? 'N/A',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                      color: Color.fromRGBO(50, 50, 50, 1),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildClientInfo(tickets[index]),
+                                  //  _buildDateAndNote(tickets[index]),
+                                ],
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TicketDetailScreenTech(
+                                      ticketId: tickets[index]['_id'],
+                                      ticket: null,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Agence: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(tickets[index]['agence']['agence']),
-                              ],
-                            ),
+                            _buildActionButtons(tickets[index]),
                           ],
-                        ),
-                        trailing: ElevatedButton(
-                          onPressed: () {
-                            String ticketId = tickets[index]['_id'];
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 176, 190, 173),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            'Waiting for validation',
-                            style: TextStyle(color: Colors.white),
-                          ),
                         ),
                       ),
                     );
@@ -148,4 +175,269 @@ class _FieldSolvedScreenState extends State<FieldSolvedScreen> {
                 ),
     );
   }
+
+  Widget _buildClientInfo(Map<String, dynamic> ticket) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildRow(
+          "Client: ",
+          ticket['client'] is Map && ticket['client']['name'] != null
+              ? ticket['client']['name']
+              : 'Non spécifié',
+        ),
+        _buildRow(
+          "Agence: ",
+          ticket['agence'] is Map && ticket['agence']['agence'] != null
+              ? ticket['agence']['agence']
+              : 'Non spécifié',
+        ),
+        // Padding(
+        //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+        //   child: Column(
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     children: [
+        //       Text(
+        //         "Contacts: ",
+        //         style: TextStyle(fontWeight: FontWeight.bold),
+        //       ),
+        //       ticket['agence'] is Map &&
+        //               ticket['agence']['contacts'] != null &&
+        //               ticket['agence']['contacts'] is List &&
+        //               ticket['agence']['contacts'].isNotEmpty
+        //           ? Column(
+        //               children: List.generate(
+        //                   ticket['agence']['contacts'].length, (index) {
+        //                 var contact = ticket['agence']['contacts'][index];
+        //                 return contact is Map &&
+        //                         contact['name'] != null &&
+        //                         contact['phone'] != null
+        //                     ? Row(
+        //                         children: [
+        //                           Icon(Icons.phone,
+        //                               size: 16, color: Colors.blue),
+        //                           SizedBox(width: 8),
+        //                           Text(
+        //                             "${contact['name']}: ${contact['phone']}",
+        //                             style: TextStyle(fontSize: 14),
+        //                           ),
+        //                         ],
+        //                       )
+        //                     : Text('Contact incomplet');
+        //               }),
+        //             )
+        //           : Text('Non spécifié'),
+        //     ],
+        //   ),
+        // ),
+      ],
+    );
+  }
+
+  Widget _buildRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateAndNote(Map<String, dynamic> ticket) {
+    print('Aiisgned time: ${ticket['solving_time']}');
+    return Column(
+      children: [
+        _buildRow("Note: ", ticket['note'] ?? 'N/A'),
+        _buildRow("Completed Date: ", formatDate(ticket['solving_time'])),
+        _buildRow("Completed Hour: ", formatTime(ticket['solving_time'])),
+      ],
+    );
+  }
+
+  String formatDate(String? dateString) {
+    if (dateString == null || dateString == 'N/A') {
+      return 'N/A'; // Si la date est absente ou invalide, renvoyer 'N/A'
+    }
+    try {
+      DateTime? parsedDate = DateTime.tryParse(dateString);
+      if (parsedDate == null) {
+        return 'N/A'; // Si parsing échoue, renvoyer 'N/A'
+      }
+      return DateFormat('dd/MM/yyyy')
+          .format(parsedDate); // Format du jour/mois/année
+    } catch (e) {
+      return 'N/A'; // Si une erreur se produit pendant le parsing, renvoyer 'N/A'
+    }
+  }
+
+  String formatTime(String? dateString) {
+    if (dateString == null || dateString == 'N/A') {
+      return 'N/A'; // Si l'heure est absente ou invalide, renvoyer 'N/A'
+    }
+    try {
+      DateTime? parsedDate = DateTime.tryParse(dateString);
+      if (parsedDate == null) {
+        return 'N/A'; // Si parsing échoue, renvoyer 'N/A'
+      }
+      return DateFormat('HH:mm:ss')
+          .format(parsedDate); // Format des heures/minutes/secondes
+    } catch (e) {
+      return 'N/A'; // Si une erreur se produit pendant le parsing, renvoyer 'N/A'
+    }
+  }
+
+  Widget _buildActionButtons(Map<String, dynamic> ticket) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const SizedBox(
+              width: 30), // Peut être ajusté ou supprimé selon le besoin
+          const SizedBox(
+              width: 25), // Peut être ajusté ou supprimé selon le besoin
+          SizedBox(
+            width:
+                170, // Ajuste la largeur pour s'assurer que le texte tient sur une ligne
+            child: ElevatedButton(
+              onPressed: () {
+                String ticketId =
+                    ticket['_id']; // Correction ici pour accéder au bon ticket
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 176, 190, 173),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical:
+                      5, // Ajuste la valeur pour réduire le padding vertical
+                  horizontal:
+                      8, // Ajuste la valeur pour réduire le padding horizontal
+                ),
+              ),
+              child: const Text(
+                'Waiting for validation ..',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                ),
+                overflow:
+                    TextOverflow.ellipsis, // Tronque le texte s'il dépasse
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+  // @override
+  // Widget build(BuildContext context) {
+  //   print('Received token in Solved Field Ticket: ${widget.token}');
+
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       title: const Text(
+  //         'Completed Tickets',
+  //         style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
+  //       ),
+  //       backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
+  //       toolbarHeight: 60,
+  //       actions: [
+  //         IconButton(
+  //           icon: const Icon(Icons.refresh),
+  //           onPressed: fetchAssignedTickets,
+  //         ),
+  //       ],
+  //     ),
+  //     body: isLoading
+  //         ? const Center(child: CircularProgressIndicator())
+  //         : tickets.isEmpty
+  //             ? const Center(
+  //                 child: Text(
+  //                   'No solved tickets found.',
+  //                   style: TextStyle(fontSize: 20),
+  //                 ),
+  //               )
+  //             : ListView.builder(
+  //                 itemCount: tickets.length,
+  //                 itemBuilder: (context, index) {
+  //                   return Card(
+  //                     margin: const EdgeInsets.all(10),
+  //                     color: const Color.fromRGBO(
+  //                         231, 236, 250, 1), // Couleur de fond de la carte
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(
+  //                           15), // Arrondi des bords de la carte
+  //                     ),
+  //                     child: ListTile(
+  //                       contentPadding: const EdgeInsets.all(
+  //                           10), // Ajout de padding à ListTile
+  //                       title: Text(
+  //                         tickets[index]['reference'] ?? 'N/A',
+  //                         style: const TextStyle(
+  //                           fontWeight: FontWeight.bold,
+  //                           fontSize: 16,
+  //                         ),
+  //                       ),
+  //                       onTap: () {
+  //                         Navigator.push(
+  //                           context,
+  //                           MaterialPageRoute(
+  //                             builder: (context) => TicketDetailScreenTech(
+  //                               ticketId: tickets[index]['_id'],
+  //                               ticket: null,
+  //                             ),
+  //                           ),
+  //                         );
+  //                       },
+  //                       subtitle: Column(
+  //                         crossAxisAlignment: CrossAxisAlignment.start,
+  //                         children: [
+  //                           Row(
+  //                             children: [
+  //                               const Text(
+  //                                 "Status: ",
+  //                                 style: TextStyle(fontWeight: FontWeight.bold),
+  //                               ),
+  //                               Text(tickets[index]['status'] ?? 'N/A'),
+  //                             ],
+  //                           ),
+  //                         ],
+  //                       ),
+  //                       trailing: ElevatedButton(
+  //                         onPressed: () {
+  //                           String ticketId = tickets[index]['_id'];
+  //                           // Ajouter la logique pour gérer la validation ici
+  //                         },
+  //                         style: ElevatedButton.styleFrom(
+  //                           backgroundColor: const Color.fromARGB(
+  //                               255, 176, 190, 173), // Couleur du bouton
+  //                           shape: RoundedRectangleBorder(
+  //                             borderRadius: BorderRadius.circular(10),
+  //                           ),
+  //                         ),
+  //                         child: const Text(
+  //                           'Waiting for validation',
+  //                           style: TextStyle(color: Colors.white),
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //   );
+  // }

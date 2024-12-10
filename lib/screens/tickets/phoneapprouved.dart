@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
+import 'package:todo/screens/tickets/ticketDetails.dart';
+import 'package:intl/intl.dart';
 
 class PhoneApprouvedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const PhoneApprouvedScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const PhoneApprouvedScreen({super.key, required this.token, this.email});
 
   @override
   _PhoneApprouvedScreenState createState() => _PhoneApprouvedScreenState();
@@ -42,7 +43,7 @@ class _PhoneApprouvedScreenState extends State<PhoneApprouvedScreen> {
         if (responseData != null) {
           setState(() {
             tickets = responseData
-                .where((ticket) => ticket['status'] == 'APPROVED')
+                .where((ticket) => ticket['status'] == 'VALIDATED')
                 .toList();
             isLoading = false;
           });
@@ -64,25 +65,25 @@ class _PhoneApprouvedScreenState extends State<PhoneApprouvedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Approuved Tickets',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+        title: const Text(
+          'Validated Tickets',
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
-                    'No ticket found.',
+                    'No completed tickets found.',
                     style: TextStyle(fontSize: 20),
                   ),
                 )
@@ -90,47 +91,260 @@ class _PhoneApprouvedScreenState extends State<PhoneApprouvedScreen> {
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
+                      color: const Color.fromRGBO(231, 236, 250, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       child: Padding(
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                          children: [
+                            ListTile(
+                              title: Row(
                                 children: [
-                                  Text(
-                                    "Status: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                                  const Text(
+                                    "Ticket Number: ",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                      color: Color.fromRGBO(50, 50, 50, 1),
+                                    ),
                                   ),
-                                  Text(tickets[index]['status']),
+                                  Text(
+                                    tickets[index]['reference'] ?? 'N/A',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                      color: Color.fromRGBO(50, 50, 50, 1),
+                                    ),
+                                  ),
                                 ],
                               ),
-                              Row(
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    "Client: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(tickets[index]['client']['name']),
+                                  _buildClientInfo(tickets[index]),
+                                  //    _buildDateAndNote(tickets[index]),
                                 ],
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Agence: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TicketDetailScreenTech(
+                                      ticketId: tickets[index]['_id'],
+                                      ticket: null,
+                                    ),
                                   ),
-                                  Text(tickets[index]['agence']['agence']),
-                                ],
-                              ),
-                            ]),
+                                );
+                              },
+                            ),
+                            //_buildActionButtons(tickets[index]),
+                          ],
+                        ),
                       ),
                     );
                   },
                 ),
     );
   }
+
+  Widget _buildClientInfo(Map<String, dynamic> ticket) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildRow(
+          "Client: ",
+          ticket['client'] is Map && ticket['client']['name'] != null
+              ? ticket['client']['name']
+              : 'Non spécifié',
+        ),
+        _buildRow(
+          "Agence: ",
+          ticket['agence'] is Map && ticket['agence']['agence'] != null
+              ? ticket['agence']['agence']
+              : 'Non spécifié',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Contacts: ",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              // Vérifiez si le champ des contacts est vide
+              ticket['agence'] is Map &&
+                      ticket['agence']['contacts'] is List &&
+                      ticket['agence']['contacts'].isNotEmpty
+                  ? Column(
+                      children: List.generate(
+                        ticket['agence']['contacts'].length,
+                        (index) {
+                          var contact = ticket['agence']['contacts'][index];
+
+                          // Vérifiez si le contact est un Map et a des valeurs valides
+                          if (contact is Map &&
+                              contact['name'] != null &&
+                              contact['phone'] != null) {
+                            // Vérifier si le nom est "CA" ou "CB"
+                            if (contact['name'] == "CA" ||
+                                contact['name'] == "CB") {
+                              return Container(); // Ne rien afficher pour CA ou CB
+                            } else {
+                              return Row(
+                                children: [
+                                  Icon(Icons.phone,
+                                      size: 16, color: Colors.blue),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "Chargé DAB : ",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  Text(
+                                    "${contact['phone']}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              );
+                            }
+                          }
+                          return Text(
+                              'Contact incomplet'); // Message pour contact incomplet
+                        },
+                      ),
+                    )
+                  : Text('Non spécifié'), // Cas où il n'y a pas de contacts
+
+              // Vérifiez si tous les contacts sont "CA" ou "CB"
+              if (ticket['agence']['contacts'].isNotEmpty &&
+                  ticket['agence']['contacts'].every((contact) {
+                    return contact is Map &&
+                        contact['name'] != null &&
+                        (contact['name'] == "CA" || contact['name'] == "CB");
+                  }))
+                Text(
+                  'Aucun contact disponible',
+                  style: TextStyle(
+                      color: Colors.grey), // Changer la couleur en gris
+                ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateAndNote(Map<String, dynamic> ticket) {
+    print('Aiisgned time: ${ticket['created_at']}');
+    return Column(
+      children: [
+        _buildRow("Note: ", ticket['note'] ?? 'N/A'),
+        _buildRow("Assigned Date: ", formatDate(ticket['created_at'])),
+        _buildRow("Assigned Hour: ", formatTime(ticket['created_at'])),
+      ],
+    );
+  }
+
+  String formatDate(String? dateString) {
+    if (dateString == null || dateString == 'N/A') {
+      return 'N/A'; // Si la date est absente ou invalide, renvoyer 'N/A'
+    }
+    try {
+      DateTime? parsedDate = DateTime.tryParse(dateString);
+      if (parsedDate == null) {
+        return 'N/A'; // Si parsing échoue, renvoyer 'N/A'
+      }
+      return DateFormat('dd/MM/yyyy')
+          .format(parsedDate); // Format du jour/mois/année
+    } catch (e) {
+      return 'N/A'; // Si une erreur se produit pendant le parsing, renvoyer 'N/A'
+    }
+  }
+
+  String formatTime(String? dateString) {
+    if (dateString == null || dateString == 'N/A') {
+      return 'N/A'; // Si l'heure est absente ou invalide, renvoyer 'N/A'
+    }
+    try {
+      DateTime? parsedDate = DateTime.tryParse(dateString);
+      if (parsedDate == null) {
+        return 'N/A'; // Si parsing échoue, renvoyer 'N/A'
+      }
+      return DateFormat('HH:mm:ss')
+          .format(parsedDate); // Format des heures/minutes/secondes
+    } catch (e) {
+      return 'N/A'; // Si une erreur se produit pendant le parsing, renvoyer 'N/A'
+    }
+  }
+
+  // Widget _buildActionButtons(Map<String, dynamic> ticket) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.end,
+  //       children: [
+  //         const SizedBox(
+  //             width: 30), // Peut être ajusté ou supprimé selon le besoin
+  //         const SizedBox(
+  //             width: 25), // Peut être ajusté ou supprimé selon le besoin
+  //         SizedBox(
+  //           width:
+  //               170, // Ajuste la largeur pour s'assurer que le texte tient sur une ligne
+  //           child: ElevatedButton(
+  //             onPressed: () {
+  //               String ticketId =
+  //                   ticket['_id']; // Correction ici pour accéder au bon ticket
+  //             },
+  //             style: ElevatedButton.styleFrom(
+  //               backgroundColor: const Color.fromARGB(255, 176, 190, 173),
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(10),
+  //               ),
+  //               padding: const EdgeInsets.symmetric(
+  //                 vertical:
+  //                     5, // Ajuste la valeur pour réduire le padding vertical
+  //                 horizontal:
+  //                     8, // Ajuste la valeur pour réduire le padding horizontal
+  //               ),
+  //             ),
+  //             child: const Text(
+  //               'Waiting for validation ..',
+  //               style: TextStyle(
+  //                 color: Colors.white,
+  //                 fontSize: 12,
+  //               ),
+  //               overflow:
+  //                   TextOverflow.ellipsis, // Tronque le texte s'il dépasse
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

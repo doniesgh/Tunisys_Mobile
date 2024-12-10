@@ -11,8 +11,7 @@ class SimpleHelloDialog extends StatelessWidget {
   var address = ConfigService().adresse;
   var port = ConfigService().port;
 
-  SimpleHelloDialog({Key? key, required this.ticketId, required this.token})
-      : super(key: key) {
+  SimpleHelloDialog({super.key, required this.ticketId, required this.token}) {
     print('Received token in constructor: $token');
   }
 
@@ -22,14 +21,14 @@ class SimpleHelloDialog extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Oops...'),
-            content: Text('Le champ ne doit pas être vide'),
+            title: const Text('Oops...'),
+            content: const Text('Le champ ne doit pas être vide'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -59,14 +58,14 @@ class SimpleHelloDialog extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Oops...'),
+            title: const Text('Oops...'),
             content: Text(error.toString()),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -80,20 +79,20 @@ class SimpleHelloDialog extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmation de validation'),
-          content: Text('Voulez-vous marquer ce ticket comme résolu ?'),
+          title: const Text('Confirmation de validation'),
+          content: const Text('Voulez-vous marquer ce ticket comme résolu ?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text('Annuler'),
+              child: const Text('Annuler'),
             ),
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop(true); // Close the dialog and confirm
               },
-              child: Text('Oui'),
+              child: const Text('Oui'),
             ),
           ],
         );
@@ -109,15 +108,15 @@ class SimpleHelloDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     print('Received token in build method: $token');
     return AlertDialog(
-      title: Text('Solving Ticket'),
+      title: const Text('Solving Ticket'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Solution:'),
+          const Text('Solution:'),
           TextField(
             controller: solutionController,
-            decoration: InputDecoration(),
+            decoration: const InputDecoration(),
           ),
         ],
       ),
@@ -126,17 +125,17 @@ class SimpleHelloDialog extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Close'),
+          child: const Text('Close'),
         ),
         TextButton(
           onPressed: () {
             showConfirmationDialog(context);
           },
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+            backgroundColor: WidgetStateProperty.all<Color>(Colors.green),
+            foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
           ),
-          child: Text('Submit'),
+          child: const Text('Submit'),
         ),
       ],
     );

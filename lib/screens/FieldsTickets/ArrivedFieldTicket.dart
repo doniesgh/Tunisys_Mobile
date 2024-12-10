@@ -1,25 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:http/http.dart' as http;
 import 'package:todo/screens/FieldsTickets/LoadingFieldTicket.dart';
+import 'package:todo/screens/FieldsTickets/ReportedFieldTicket.dart';
 import 'package:todo/screens/FieldsTickets/qrCodeScreen.dart';
+import 'package:todo/screens/FieldsTickets/qrCodeScreenFin.dart';
 import 'dart:convert';
 import 'package:todo/screens/config/config_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:todo/screens/tickets/ticketDetails.dart';
 import 'package:todo/utils/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart';
 
 class FieldArrivedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const FieldArrivedScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const FieldArrivedScreen({super.key, required this.token, this.email});
 
   @override
   _FieldArrivedScreenState createState() => _FieldArrivedScreenState();
 }
 
 class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
+  final ConfigService configService = ConfigService();
   bool isLoading = false;
   List<dynamic> tickets = [];
   String lat = '';
@@ -28,22 +34,103 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
   @override
   void initState() {
     super.initState();
+    _loadConfiguration();
     fetchAssignedTickets();
+  }
+
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig(); // Charge la configuration
+    setState(() {
+      // Met à jour l'interface si nécessaire
+    });
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
+
+  // Future<void> fetchAssignedTickets() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //   var address = ConfigService().adresse;
+  //   var port = ConfigService().port;
+  //   try {
+  //     final response = await http.get(
+  //       Uri.parse('$address:$port/api/ticketht/assigned/field'),
+  //       headers: {
+  //         'Authorization': 'Bearer ${widget.token}',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final responseData = json.decode(response.body);
+  //       if (responseData != null) {
+  //         setState(() {
+  //           tickets = responseData
+  //               .where((ticket) => ticket['status'] == 'ARRIVED')
+  //               .toList();
+  //           isLoading = false;
+  //         });
+  //       } else {
+  //         throw Exception('Response data is null');
+  //       }
+  //     } else {
+  //       throw Exception('Failed to load tickets: ${response.statusCode}');
+  //     }
+  //   } catch (error) {
+  //     print('Error fetching alerts: $error');
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
   Future<void> fetchAssignedTickets() async {
     setState(() {
       isLoading = true;
     });
+
+    var address = ConfigService().adresse;
+    var port = ConfigService().port;
+
+    // Démarrer le chronomètre pour mesurer le temps de réponse
+    final stopwatch = Stopwatch()..start();
+
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/ticketht/assigned/field'),
+        Uri.parse(
+            '$address:$port/api/ticketht/assigned/field/mobile?status=ARRIVED'), // 'ASSIGNED' doit être entre guillemets
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
       );
+
+      // Arrêter le chronomètre une fois la réponse reçue
+      stopwatch.stop();
+      final duration = stopwatch.elapsed;
+
+      // Si la réponse a pris plus de 3 secondes, afficher un message de lenteur
+      if (duration.inMilliseconds > 5000) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Lenteur détectée'),
+              content: Text(
+                // Message de lenteur modifié pour inclure le message spécifié
+                'La réponse du serveur a été reçue, mais elle est trop longue à traiter. Veuillez réessayer plus tard.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData != null) {
@@ -54,16 +141,37 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
             isLoading = false;
           });
         } else {
-          throw Exception('Response data is null');
+          throw Exception('Les données de la réponse sont nulles');
         }
       } else {
-        throw Exception('Failed to load tickets: ${response.statusCode}');
+        throw Exception(
+            'Échec du chargement des tickets: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching alerts: $error');
+      print('Erreur lors de la récupération des tickets: $error');
       setState(() {
         isLoading = false;
       });
+
+      // Si une erreur s'est produite, afficher un message d'erreur
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Erreur de récupération des tickets'),
+            content: Text(
+                'Une erreur est survenue lors de la récupération des tickets. Veuillez réessayer plus tard.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -84,107 +192,37 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
     return true; // Location permissions are granted
   }
 
-/*
-  Future<void> handleStartTicket(BuildContext context, String ticketId) async {
-    bool hasLocationPermission = await checkLocationPermission();
-
-    if (!hasLocationPermission) {
-      showErrorDialog(
-        context,
-        message:
-            "Localisation non autorisée. Veuillez l'autoriser dans les paramètres.",
-      );
-      return;
+  Future<void> checkAndRequestPermissions() async {
+    final status = await Permission.phone.status;
+    if (!status.isGranted) {
+      await Permission.phone.request();
     }
+  }
 
-    // Fetch current location
-    String locationMessage = await _getCurrentLocation();
+// Ajoutez une variable pour suivre les tentatives
+  int attemptCount = 0;
 
-    // Determine if location is valid
-    bool isLocationValid = locationMessage.contains('Latitude') &&
-        locationMessage.contains('Longitude');
-
-    // Show confirmation dialog with location details
-    final result = await showDialog<bool>(
+  void showErrorDialog(BuildContext context,
+      {String message = "Veuillez réessayer plus tard"}) {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Êtes-vous sûr de vouloir commencer ce ticket ?'),
-          content: Text('Votre localisation actuelle:\n$locationMessage'),
+          title: const Text("Erreur"),
+          content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(false);
+                Navigator.of(context).pop();
               },
-              child: Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: isLocationValid
-                  ? () {
-                      Navigator.of(context).pop(true);
-                    }
-                  : null, // Disable button if location is invalid
-              child: Text('Oui, commencer'),
+              child: const Text('OK'),
             ),
           ],
         );
       },
     );
-
-    if (result == true) {
-      // QR Scanner
-      final qrResult = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => QrScannerScreen()),
-      );
-
-      if (qrResult != null && qrResult.isNotEmpty) {
-        print('Scanned QR Code: $qrResult');
-
-        try {
-          // Fetch ticket data
-          final response = await http.get(
-            Uri.parse('$address:$port/api/ticket/$ticketId'),
-            headers: {'Authorization': 'Bearer ${widget.token}'},
-          );
-
-          if (response.statusCode == 200) {
-            final ticketData = json.decode(response.body);
-            final String codeqrequipement =
-                ticketData['codeqrequipement'] ?? '';
-
-            print('Equipment QR Code: $codeqrequipement');
-
-            // If the equipment QR code is empty, assign it to the scanned QR code
-            if (codeqrequipement.isEmpty) {
-              await updateTicketStatus(context, ticketId, qrResult, qrResult);
-            }
-            // If the equipment QR code matches the scanned one
-            else if (codeqrequipement == qrResult) {
-              await updateTicketStatus(context, ticketId, qrResult, null);
-            }
-            // QR Code mismatch
-            else {
-              showErrorDialog(context,
-                  message:
-                      'Le code QR scanné ne correspond pas au code QR de l\'équipement. $qrResult != $codeqrequipement');
-            }
-          } else {
-            showErrorDialog(context,
-                message:
-                    "Erreur lors de la récupération des données du ticket.");
-          }
-        } catch (error) {
-          showErrorDialog(context,
-              message: "Une erreur s'est produite. Veuillez réessayer.");
-        }
-      } else {
-        showErrorDialog(context,
-            message: "Scan de QR code annulé ou invalide.");
-      }
-    }
   }
-*/
+
   Future<void> handleStartTicket(BuildContext context, String ticketId) async {
     bool hasLocationPermission = await checkLocationPermission();
 
@@ -197,20 +235,10 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
       return;
     }
 
-    // Fetch current location
     Position currentPosition = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    if (currentPosition == null) {
-      showErrorDialog(
-        context,
-        message: "Impossible d'obtenir la localisation actuelle.",
-      );
-      return;
-    }
-
-    // Fetch ticket data to get equipment's coordinates
     final response = await http.get(
       Uri.parse('$address:$port/api/ticket/$ticketId'),
       headers: {'Authorization': 'Bearer ${widget.token}'},
@@ -218,86 +246,129 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
 
     if (response.statusCode == 200) {
       final ticketData = json.decode(response.body);
-      print(ticketData);
-      final double equipmentLat = ticketData['equipement']['latitude'] ?? 0.0;
-      final double equipmentLong = ticketData['equipement']['longitude'] ?? 0.0;
-      print(equipmentLong);
-      print(equipmentLat);
-      print(currentPosition.latitude);
-      print(currentPosition.longitude);
-      // Calculate the distance between user location and equipment location
+      final double? equipmentLat = ticketData['equipement']['latitude'];
+      final double? equipmentLong = ticketData['equipement']['longitude'];
+      final String? numeroSerie = ticketData['equipement']['numero_serie'];
+
+      // Affiche la position de l'équipement dans les logs
+      print(
+          "Position de l'équipement : Latitude: $equipmentLat , Longitude: $equipmentLong");
+      print("Numéro de série de l'équipement: $numeroSerie");
+
+      // Affiche la position de l'utilisateur
+      print(
+          "Votre position : Latitude: ${currentPosition.latitude} , Longitude: ${currentPosition.longitude}");
+
+      // Vérification de la position de l'équipement
+      if (equipmentLat == null ||
+          equipmentLong == null ||
+          equipmentLat == 0.0 ||
+          equipmentLong == 0.0) {
+        showErrorDialogCoord(
+          context,
+          message:
+              "L'équipement ne possède pas de position, veuillez contacter la coordinatrice.",
+        );
+        return; // Arrête l'exécution ici pour éviter une autre alerte
+      }
+
+      // Calcul de la distance
       double distance = Geolocator.distanceBetween(
         currentPosition.latitude,
         currentPosition.longitude,
         equipmentLat,
         equipmentLong,
       );
+      print("distance :  ${distance}");
+      if (distance > 1700) {
+        attemptCount++;
+        print(
+            "Votre position est loin : Latitude: ${currentPosition.latitude} , Longitude: ${currentPosition.longitude}");
 
-      /*if (distance > 20.0) {
-        showErrorDialog(
-          context,
-          message:
-              "Vous êtes trop loin de l'équipement. Distance: ${distance.toStringAsFixed(2)} mètres",
-        );
-        return;
-      }
-*/
-      if (distance > 20.0) {
-        showErrorDialog(
-          context,
-          message:
-              "Vous êtes trop loin de l'équipement. Distance: ${distance.toStringAsFixed(2)} mètres",
-        );
-        return;
-      } else if (distance < 2.0) {
-        // Petite marge pour les erreurs de précision GPS
-        distance = 0.0; // Considérer comme même localisation
-      }
-      String distanceMessage =
-          'Distance de l\'équipement: ${distance.toStringAsFixed(2)} mètres';
-
-      // Show confirmation dialog with location details
-      String locationMessage =
-          'Latitude: ${currentPosition.latitude}, Longitude: ${currentPosition.longitude}';
-      final result = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Commencer ce ticket ?'),
-            content: Text(
-              'Votre localisation actuelle:\n$locationMessage\n\n$distanceMessage',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                },
-                child: Text('Annuler'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-                child: Text('Oui, commencer'),
-              ),
-            ],
+        if (attemptCount >= 4) {
+          showErrorDialogCoord(
+            context,
+            message: "Veuillez appeler la coordinatrice.",
           );
-        },
-      );
+          attemptCount = 0;
+          return;
+        } else {
+          showErrorDialogPosition(
+            context,
+            message: "Vous n'êtes pas sur le bon site",
+          );
+          return;
+        }
+      } else {
+        distance = 0.0; // Considérer comme même localisation
 
-      if (result == true) {
-        await updateTicketStatus(context, ticketId, "", null);
+        // Ouvrir le scanner QR code
+        final qrCodeResult = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BarcodeScannerScreen()),
+        );
+
+        if (qrCodeResult != null && numeroSerie != null) {
+          // Passez le résultat (code QR scanné) à la fonction `updateTicketStatus`
+          await updateTicketStatus(
+              context, ticketId, qrCodeResult, numeroSerie);
+        }
       }
     } else {
-      showErrorDialog(context,
-          message: "Erreur lors de la récupération des données du ticket.");
+      showErrorDialog(context, message: "Numéro de série manquant.");
     }
   }
 
-// Function to update the ticket status
+// Normalisation du numéro de série
+  String normalizeSerialNumber(String serial) {
+    return serial.replaceAll(RegExp(r'\s+'), '').toUpperCase();
+  }
+
+// Comparaison partielle
+  bool compareSerialNumbers(String scannedCode, String equipmentSerial) {
+    String normalizedScannedCode = normalizeSerialNumber(scannedCode);
+    String normalizedEquipmentSerial = normalizeSerialNumber(equipmentSerial);
+
+    // Vérifie si le code scanné contient le numéro de série de l'équipement
+    return normalizedScannedCode.contains(normalizedEquipmentSerial);
+  }
+
   Future<void> updateTicketStatus(BuildContext context, String ticketId,
-      String qrResult, String? codeqrequipement) async {
+      String qrResult, String? numeroSerie) async {
     try {
+      print("updateticket function is called");
+      //    print("equipement num serie : ${equipement.numero_serie}");
+      // Vérifier si le numero_serie est bien récupéré avant la comparaison
+      if (numeroSerie == null) {
+        showErrorDialog(context,
+            message: "Le numéro de série de l'équipement est manquant.");
+        return;
+      }
+
+      // Comparaison des codes QR
+      if (!compareSerialNumbers(qrResult, numeroSerie)) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Code QR incorrect'),
+              content: const Text(
+                  'Le code QR scanné ne correspond pas à l\'équipement.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      }
+
+      // Proceed with updating ticket if the comparison is successful
       final updateResponse = await http.put(
         Uri.parse('$address:$port/api/ticket/startedScan/$ticketId'),
         headers: {
@@ -305,9 +376,8 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
           'Authorization': 'Bearer ${widget.token}'
         },
         body: json.encode({
-          'status': 'LOADING',
+          'status': 'HANDLED',
           'codeqrStart': qrResult,
-          'codeqrequipement': codeqrequipement ?? qrResult,
           'starting_time': DateTime.now().toIso8601String(),
         }),
       );
@@ -317,14 +387,20 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Ticket commencé avec succès!'),
+              title: const Text('Ticket commencé avec succès!'),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    fetchAssignedTickets();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FieldLoadingScreen(token: widget.token),
+                      ),
+                    );
                   },
-                  child: Text('OK'),
+                  child: const Text('OK'),
                 ),
               ],
             );
@@ -340,21 +416,109 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
     }
   }
 
-// Error dialog display
-  void showErrorDialog(BuildContext context,
-      {String message = "Veuillez réessayer plus tard"}) {
+  void showErrorDialogCoord(BuildContext context, {required String message}) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Erreur"),
-          content: Text(message),
+          title: const Row(
+            children: [
+              Icon(Icons.phone, color: Colors.red), // Icône de téléphone
+              SizedBox(width: 8), // Espacement entre l'icône et le texte
+              Text(
+                'Alerte',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.error, color: Colors.red), // Icône d'erreur
+              const SizedBox(width: 8), // Espacement entre l'icône et le texte
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
+            ),
+            TextButton(
+              onPressed: () {
+                //    FlutterPhoneDirectCall.callNumber('+20202020') ;
+                // launchUrl('tel:+52268475' as Uri);
+                FlutterPhoneDirectCaller.callNumber('+20202020');
+              },
+              child: const Row(
+                children: [
+                  Icon(Icons.phone, color: Colors.blue), // Icône de téléphone
+                  SizedBox(width: 4), // Espacement entre l'icône et le texte
+                  Text('Appeler', style: TextStyle(color: Colors.blue)),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showErrorDialogPosition(BuildContext context,
+      {required String message}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.wrong_location,
+                  color: Colors.red), // Icône de téléphone
+              SizedBox(width: 8), // Espacement entre l'icône et le texte
+              Text(
+                'Alerte',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.error, color: Colors.red), // Icône d'erreur
+              const SizedBox(width: 8), // Espacement entre l'icône et le texte
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
             ),
           ],
         );
@@ -403,27 +567,152 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
     }
   }
 
+  Future<void> handleReportTicket(String ticketId) async {
+    String reportingNoteArrived =
+        ''; // Variable pour stocker la raison du report
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Reporting Ticket ?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Text('Pourquoi voulez-vous reporter le ticket ?'),
+              TextField(
+                onChanged: (value) {
+                  reportingNoteArrived =
+                      value; // Met à jour la raison du report à chaque changement
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Raison du report',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Annule l'action de report
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (reportingNoteArrived.trim().isEmpty) {
+                  // Affiche un message d'erreur si le champ est vide
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Attention'),
+                        content: const Text(
+                            'Le champ de raison du report est requis.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  return; // Arrête l'exécution si le champ est vide
+                }
+                Navigator.of(context).pop(true); // Confirme l'action de report
+                try {
+                  final response = await http.put(
+                    Uri.parse(
+                        '$address:$port/api/ticket/ReportingArrivedField/$ticketId'),
+                    headers: {'Content-Type': 'application/json'},
+                    body: json.encode({
+                      'status': 'REPORTED',
+                      'reporting_note_arrived': reportingNoteArrived,
+                      'reporting_arrivedTicket_time':
+                          DateTime.now().toIso8601String(),
+                    }),
+                  );
+
+                  if (response.statusCode == 200) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Reporté avec succès!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FieldReportedScreen(
+                                      token: widget.token,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    throw Exception('Échec du report du ticket');
+                  }
+                } catch (error) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Erreur lors du report"),
+                        content: const Text("Veuillez réessayer plus tard"),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: const Text('Reporter'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Arrived',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No arrived tickets found.',
                     style: TextStyle(fontSize: 20),
@@ -433,52 +722,256 @@ class _FieldArrivedScreenState extends State<FieldArrivedScreen> {
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      margin: EdgeInsets.all(10),
-                      child: ListTile(
-                        title: Text(tickets[index]['reference']),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TicketDetailScreen(
-                                  ticketId: tickets[index]['_id']),
-                            ),
-                          );
-                        },
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      margin: const EdgeInsets.all(10),
+                      color: const Color.fromRGBO(231, 236, 250, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Status: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                            ListTile(
+                              title: Text(
+                                tickets[index]['reference'] ?? 'N/A',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  color: Color.fromRGBO(50, 50, 50, 1),
                                 ),
-                                Text(tickets[index]['status']),
-                              ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildClientInfo(tickets[index]),
+                                  _buildDateAndNote(tickets[index]),
+                                ],
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TicketDetailScreenTech(
+                                      ticketId: tickets[index]['_id'],
+                                      ticket: null,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
+                            _buildActionButtons(tickets[index]),
                           ],
-                        ),
-                        trailing: ElevatedButton(
-                          onPressed: () {
-                            //handleStartTicket(tickets[index]['_id']);
-                            handleStartTicket(context, tickets[index]['_id']);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 51, 197, 66),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            'Start',
-                            style: TextStyle(color: Colors.white),
-                          ),
                         ),
                       ),
                     );
                   },
                 ),
+    );
+  }
+
+  Widget _buildClientInfo(Map<String, dynamic> ticket) {
+    print('Help desk : ${ticket['technicien_transfer']}');
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _buildRow(
+        "Client: ",
+        ticket['client'] is Map && ticket['client']['name'] != null
+            ? ticket['client']['name']
+            : ticket['client'] ?? 'Non spécifié', // Valeur par défaut
+      ),
+      _buildRow(
+        "Agence: ",
+        ticket['agence'] is Map && ticket['agence']['agence'] != null
+            ? ticket['agence']['agence']
+            : ticket['agence'] ?? 'Non spécifié', // Valeur par défaut
+      ),
+      _buildRow(
+        "Help desk: ",
+        ticket['technicien_transfer'] is Map //technicien twali
+            ? "${ticket['technicien_transfer']['firstname']} ${ticket['technicien_transfer']['lastname']}"
+            : 'Non spécifié',
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Contacts: ",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            // Vérifiez si le champ des contacts est vide
+            ticket['agence'] is Map &&
+                    ticket['agence']['contacts'] is List &&
+                    ticket['agence']['contacts'].isNotEmpty
+                ? Column(
+                    children: List.generate(
+                      ticket['agence']['contacts'].length,
+                      (index) {
+                        var contact = ticket['agence']['contacts'][index];
+
+                        // Vérifiez si le contact est un Map et a des valeurs valides
+                        if (contact is Map &&
+                            contact['name'] != null &&
+                            contact['phone'] != null) {
+                          // Vérifier si le nom est "CA" ou "CB"
+                          if (contact['name'] == "CA" ||
+                              contact['name'] == "CB") {
+                            return Container(); // Ne rien afficher pour CA ou CB
+                          } else {
+                            return Row(
+                              children: [
+                                Icon(Icons.phone, size: 16, color: Colors.blue),
+                                SizedBox(width: 8),
+                                Text(
+                                  "Chargé DAB : ",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  "${contact['phone']}",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            );
+                          }
+                        }
+                        return Text(
+                            'Contact incomplet'); // Message pour contact incomplet
+                      },
+                    ),
+                  )
+                : Text('Non spécifié'), // Cas où il n'y a pas de contacts
+
+            // Vérifiez si tous les contacts sont "CA" ou "CB"
+            if (ticket['agence']['contacts'].isNotEmpty &&
+                ticket['agence']['contacts'].every((contact) {
+                  return contact is Map &&
+                      contact['name'] != null &&
+                      (contact['name'] == "CA" || contact['name'] == "CB");
+                }))
+              Text(
+                'Aucun contact disponible',
+                style:
+                    TextStyle(color: Colors.grey), // Changer la couleur en gris
+              ),
+          ],
+        ),
+      )
+    ]);
+  }
+
+  Widget _buildDateAndNote(Map<String, dynamic> ticket) {
+    print('Date de transfert: ${ticket['transfering_time']}');
+    return Column(
+      children: [
+        _buildRow("Note Coordinatrice: ", ticket['note'] ?? 'N/A'),
+        // _buildRow(
+        //     "Date de transfert: ", formatDate(ticket['transfering_time'])),
+        // _buildRow(
+        //     "Heure de transfert : ", formatTime(ticket['transfering_time'])),
+      ],
+    );
+  }
+
+  String formatDate(String? dateString) {
+    if (dateString == null || dateString == 'N/A') {
+      return 'N/A'; // Si la date est absente ou invalide, renvoyer 'N/A'
+    }
+    try {
+      DateTime? parsedDate = DateTime.tryParse(dateString);
+      if (parsedDate == null) {
+        return 'N/A'; // Si parsing échoue, renvoyer 'N/A'
+      }
+      return DateFormat('dd/MM/yyyy')
+          .format(parsedDate); // Format du jour/mois/année
+    } catch (e) {
+      return 'N/A'; // Si une erreur se produit pendant le parsing, renvoyer 'N/A'
+    }
+  }
+
+  String formatTime(String? dateString) {
+    if (dateString == null || dateString == 'N/A') {
+      return 'N/A'; // Si l'heure est absente ou invalide, renvoyer 'N/A'
+    }
+    try {
+      DateTime? parsedDate = DateTime.tryParse(dateString);
+      if (parsedDate == null) {
+        return 'N/A'; // Si parsing échoue, renvoyer 'N/A'
+      }
+      return DateFormat('HH:mm:ss')
+          .format(parsedDate); // Format des heures/minutes/secondes
+    } catch (e) {
+      return 'N/A'; // Si une erreur se produit pendant le parsing, renvoyer 'N/A'
+    }
+  }
+
+  Widget _buildRow(String label, String value) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: Color.fromRGBO(52, 52, 52, 1),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color.fromARGB(255, 102, 102, 102),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(Map<String, dynamic> ticket) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(width: 30),
+          ElevatedButton.icon(
+            onPressed: () {
+              handleReportTicket(ticket[
+                  '_id']); // Utiliser le paramètre 'ticket' correctement ici
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 122, 122, 122),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            ),
+            icon: const Icon(Icons.report, color: Colors.white),
+            label: const Text(
+              'Report',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 25),
+          ElevatedButton.icon(
+            onPressed: () {
+              handleStartTicket(context, ticket['_id']); // Corriger ici aussi
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color.fromARGB(255, 240, 174, 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            ),
+            icon: const Icon(Icons.play_arrow, color: Colors.white),
+            label: const Text(
+              'Start',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

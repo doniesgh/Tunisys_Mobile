@@ -8,32 +8,40 @@ class FieldReportedScreen extends StatefulWidget {
   final String token;
   final String? email;
 
-  const FieldReportedScreen({Key? key, required this.token, this.email})
-      : super(key: key);
+  const FieldReportedScreen({super.key, required this.token, this.email});
 
   @override
   _FieldReportedScreenState createState() => _FieldReportedScreenState();
 }
 
 class _FieldReportedScreenState extends State<FieldReportedScreen> {
+  final ConfigService configService = ConfigService();
   bool isLoading = false;
   List<dynamic> tickets = [];
 
   @override
   void initState() {
     super.initState();
+    _loadConfiguration();
     fetchAssignedTickets();
+  }
+
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig();
+    setState(() {});
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
+
   Future<void> fetchAssignedTickets() async {
     setState(() {
       isLoading = true;
     });
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/ticketht/assigned/field'),
+        Uri.parse(
+            '$address:$port/api/ticketht/assigned/field/mobile?status=REPORTED'), // 'ASSIGNED' doit être entre guillemets
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
@@ -61,271 +69,201 @@ class _FieldReportedScreenState extends State<FieldReportedScreen> {
     }
   }
 
-  Future<void> handleReportTicket(String ticketId) async {
-    String reportReason = ''; // Variable pour stocker la raison du report
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Reporting Ticket ?'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text('Pourquoi voulez-vous reporter le ticket ?'),
-              TextField(
-                onChanged: (value) {
-                  reportReason =
-                      value; // Met à jour la raison du report à chaque changement
-                },
-                decoration: InputDecoration(
-                  hintText: 'Raison du report',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // Annule l'action de report
-              },
-              child: Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop(true); // Confirme l'action de report
-                try {
-                  final response = await http.put(
-                    Uri.parse(
-                        '$address:$port/api/ticket/ReportAssignedTicket/$ticketId'),
-                    headers: {'Content-Type': 'application/json'},
-                    body: json.encode({
-                      'status': 'REPORTED',
-                      'note':
-                          reportReason, // Inclut la raison du report dans la requête
-                    }),
-                  );
-
-                  if (response.statusCode == 200) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('Reporté avec succès!'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                fetchAssignedTickets();
-                              },
-                              child: Text('OK'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  } else {
-                    throw Exception('Failed to report ticket');
-                  }
-                } catch (error) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text("Erreur lors du report"),
-                        content: Text("Veuillez réessayer plus tard"),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
-              },
-              child: Text('Reporter'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> handleAcceptTicket(String ticketId) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Êtes-vous sûr  de partir ?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text('Oui, je vais partir'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result == true) {
-      try {
-        final response = await http.put(
-          Uri.parse('$address:$port/api/ticket/departure/$ticketId'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({'status': 'LEFT'}),
-        );
-
-        if (response.statusCode == 200) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Partis avec succès!'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      fetchAssignedTickets();
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        } else {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Erreur ticket"),
-                content: Text("Veuillez réessayer plus tard"),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      } catch (error) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Erreur "),
-              content: Text("Veuillez réessayer plus tard"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Reported',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+        title: const Text(
+          'Reported Tickets',
+          style: TextStyle(
+            color: Color.fromRGBO(209, 77, 90, 1),
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAssignedTickets,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No reported tickets found.',
-                    style: TextStyle(fontSize: 20),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                 )
               : ListView.builder(
                   itemCount: tickets.length,
                   itemBuilder: (context, index) {
-                    return Card(
-                      margin: EdgeInsets.all(10),
-                      child: Padding(
-                        padding: EdgeInsets.all(10), // Add padding to Card
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Ticket ID: ${tickets[index]['reference']}"),
-                            Text("Status: ${tickets[index]['status']}"),
-                            Text("Client: ${tickets[index]['client']['name']}"),
-                            Text(
-                                "Agence: ${tickets[index]['agence']['agence']}"),
-                            if (tickets[index]['reporting_note_assigned'] !=
-                                null)
+                    var ticket = tickets[index];
+                    return GestureDetector(
+                      onTap: () {
+                        // Navigation vers TicketDetailsScreen avec l'ID du ticket ou d'autres détails
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TicketDetailScreenTech(
+                              ticketId: tickets[index]['_id'],
+                              ticket: null,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.all(10),
+                        color: const Color.fromRGBO(231, 236, 250, 1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Ticket ID
                               Text(
-                                "Reported Assigned Ticket Note: ${tickets[index]['reporting_note_assigned']}",
+                                "Ticket ID: ${ticket['reference'] ?? 'N/A'}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
                               ),
-                            if (tickets[index]['reporting_note_solve'] != null)
-                              Text(
-                                "Reported Solved Ticket Note: ${tickets[index]['reporting_note_solve']}",
-                              ),
+                              const SizedBox(height: 5),
 
-                            SizedBox(
-                                height:
-                                    10), // Add spacing between text and buttons
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                    width: 10), // Add spacing between buttons
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      //   handleReportTicket(tickets[index]['_id']);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Color.fromARGB(255, 134, 134, 134),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
+                              // Status
+                              Text(
+                                "Status: ${ticket['status'] ?? 'N/A'}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+
+                              // Agence
+                              Text(
+                                "Agence: ${ticket['agence']?['agence'] ?? 'N/A'}",
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(height: 5),
+
+                              // Report Details Section
+                              const SizedBox(height: 10),
+                              Text(
+                                "Report Details",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              const Divider(color: Colors.grey),
+
+                              // Reporting note assigned (if available)
+                              if (ticket['reporting_note_assigned'] != null &&
+                                  ticket['reporting_note_assigned'].isNotEmpty)
+                                ExpansionTile(
+                                  title: const Text(
+                                    "Report Accepted",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                  children: [
+                                    for (var i = 0;
+                                        i <
+                                            ticket['reporting_note_assigned']
+                                                .length;
+                                        i++)
+                                      ListTile(
+                                        title: Text(
+                                          "Note ${i + 1}: ${ticket['reporting_note_assigned'][i]}",
+                                        ),
+                                      ),
+                                  ],
+                                ),
+
+                              // Reporting note solve (if available)
+                              if (ticket['reporting_note_solve'] != null &&
+                                  ticket['reporting_note_solve'].isNotEmpty)
+                                ExpansionTile(
+                                  title: const Text(
+                                    "Report Handled",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                  children: [
+                                    for (var i = 0;
+                                        i <
+                                            ticket['reporting_note_solve']
+                                                .length;
+                                        i++)
+                                      ListTile(
+                                        title: Text(
+                                          "Note ${i + 1}: ${ticket['reporting_note_solve'][i]}",
+                                        ),
+                                      ),
+                                  ],
+                                ),
+
+                              // Reporting note arrived (if available)
+                              if (ticket['reporting_note_arrived'] != null &&
+                                  ticket['reporting_note_arrived'].isNotEmpty)
+                                ExpansionTile(
+                                  title: const Text(
+                                    "Report Arrived",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                  children: [
+                                    for (var i = 0;
+                                        i <
+                                            ticket['reporting_note_arrived']
+                                                .length;
+                                        i++)
+                                      ListTile(
+                                        title: Text(
+                                          "Note ${i + 1}: ${ticket['reporting_note_arrived'][i]}",
+                                        ),
+                                      ),
+                                  ],
+                                ),
+
+                              const SizedBox(height: 10),
+
+                              // Waiting button
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        // handleReportTicket(ticket['_id']);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color.fromARGB(
+                                            255, 134, 134, 134),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Waiting for Restarting Date..',
+                                        style: TextStyle(color: Colors.white),
                                       ),
                                     ),
-                                    child: Text(
-                                      'Waiting for Restarting Date',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

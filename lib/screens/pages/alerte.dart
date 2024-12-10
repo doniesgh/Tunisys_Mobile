@@ -6,44 +6,45 @@ import 'package:todo/screens/config/config_service.dart';
 class AlerteScreen extends StatefulWidget {
   final String token;
 
-  AlerteScreen({required this.token});
+  const AlerteScreen({super.key, required this.token});
 
   @override
   _AlerteScreenState createState() => _AlerteScreenState();
 }
 
-class _AlerteScreenState extends State<AlerteScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  bool isLoadingAlerts = false;
-  bool isLoadingNotifications = false;
-  List<dynamic> alerts = [];
-  List<dynamic> notifications = [];
+class _AlerteScreenState extends State<AlerteScreen> {
+  final ConfigService configService = ConfigService();
   bool isLoading = false;
-  bool isLoadingNotification = false;
+  List<dynamic> alerts = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _loadConfiguration();
     fetchAlertes();
-    fetchNotification();
+  }
+
+  Future<void> _loadConfiguration() async {
+    await configService.loadConfig(); // Charge la configuration
+    setState(() {
+      // Met à jour l'interface si nécessaire
+    });
   }
 
   var address = ConfigService().adresse;
   var port = ConfigService().port;
-
   Future<void> fetchAlertes() async {
     setState(() {
       isLoading = true;
     });
     try {
       final response = await http.get(
-        Uri.parse('$address:$port/api/alert/'),
+        Uri.parse('$address:$port/api/alert/get'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
       );
+
       print('Alertes Response Status: ${response.statusCode}');
       print('Alertes Response Body: ${response.body}');
 
@@ -51,9 +52,20 @@ class _AlerteScreenState extends State<AlerteScreen>
         final List<dynamic> responseData = json.decode(response.body);
         print('Alertes Response Data: $responseData');
 
+        // Filtrer les alertes créées aujourd'hui
+        DateTime now = DateTime.now();
+        DateTime startOfDay = DateTime(now.year, now.month, now.day, 0, 0, 0);
+        DateTime endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+        List<dynamic> todayAlerts = responseData.where((alert) {
+          DateTime createdAt = DateTime.parse(alert['createdAt']);
+          return createdAt.isAfter(startOfDay) && createdAt.isBefore(endOfDay);
+        }).toList();
+
         setState(() {
-          alerts = responseData;
+          alerts = todayAlerts; // Affecter seulement les alertes d'aujourd'hui
           isLoading = false;
+          print('Alertes à afficher: $alerts');
         });
       } else {
         print('Failed to load alerts');
@@ -67,105 +79,28 @@ class _AlerteScreenState extends State<AlerteScreen>
     }
   }
 
-  Future<void> fetchNotification() async {
-    setState(() {
-      isLoadingNotifications = true;
-    });
-    try {
-      final response = await http.get(
-        Uri.parse('$address:$port/api/notification/getMOb'),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      );
-      print('Notifications Response Status: ${response.statusCode}');
-      print('Notifications Response Body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final List<dynamic> responseData = json.decode(response.body);
-        print('Notifications Response Data: $responseData');
-
-        setState(() {
-          notifications = responseData;
-          isLoadingNotifications = false;
-        });
-      } else {
-        print('Failed to load notifications');
-        throw Exception('Failed to load notifications: ${response.statusCode}');
-      }
-    } catch (error) {
-      print('Error fetching notifications: $error');
-      setState(() {
-        isLoadingNotifications = false;
-      });
-    }
-  }
-
-  Future<void> deleteNotification(String id) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$address:$port/api/notification/delete/$id'),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          notifications.removeWhere((item) => item['id'] == id);
-        });
-        await fetchNotification();
-        print('Notification deleted successfully');
-      } else {
-        print('Failed to delete notification');
-        throw Exception(
-            'Failed to delete notification: ${response.statusCode}');
-      }
-    } catch (error) {
-      print('Error deleting notification: $error');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Alertes',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+          style: TextStyle(color: Color.fromRGBO(209, 77, 90, 1), fontSize: 24),
         ),
-        backgroundColor: Color.fromRGBO(209, 77, 90, 1),
+        backgroundColor: const Color.fromRGBO(231, 236, 250, 1),
         toolbarHeight: 60,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'Alertes'),
-            Tab(text: 'Notifications'),
-          ],
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white54,
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildHistoriqueList(alerts, isLoadingAlerts, false),
-          _buildHistoriqueList(notifications, isLoadingNotifications, true),
-        ],
-      ),
+      body: _buildHistoriqueList(alerts, isLoading),
     );
   }
 
-  Widget _buildHistoriqueList(
-      List<dynamic> historique, bool isLoading, bool isNotification) {
+  Widget _buildHistoriqueList(List<dynamic> historique, bool isLoading) {
     return Padding(
       padding: const EdgeInsets.only(top: 5.0),
       child: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : historique.isEmpty
-              ? Center(
-                  child: Text(
-                      'No ${isNotification ? 'notifications' : 'alerts'} found'))
+              ? Center(child: const Text('No alerts found'))
               : ListView.builder(
                   itemCount: historique.length,
                   itemBuilder: (context, index) {
@@ -178,25 +113,40 @@ class _AlerteScreenState extends State<AlerteScreen>
                         '${createdAt.day}/${createdAt.month}/${createdAt.year} ${createdAt.hour}:${createdAt.minute}';
 
                     return Card(
-                      child: ListTile(
-                        title: Text('Message: $message'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Created At: $formattedDate'),
-                          ],
+                      elevation: 5,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: ListTile(
+                          leading: Icon(Icons.warning,
+                              color: Colors.redAccent, size: 30),
+                          title: Text(
+                            'Message: $message',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 5),
+                              Text(
+                                'Created At: $formattedDate',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        trailing: isNotification
-                            ? IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed: () {
-                                  final id = item['_id'];
-                                  if (id != null) {
-                                    deleteNotification(id);
-                                  }
-                                },
-                              )
-                            : null,
                       ),
                     );
                   },
